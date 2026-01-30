@@ -24,6 +24,8 @@ namespace ScreenCapture
         private Point _lastPoint;
         private Color _paintColor = Colors.Red;
         private double _paintThickness = 3;
+        private bool _isHorizontalLocked;  // 水平方向にロックされているか
+        private bool _isVerticalLocked;    // 垂直方向にロックされているか
         
         // アンドゥ・リドゥ
         private Stack<List<UIElement>> _undoStack = new Stack<List<UIElement>>();
@@ -566,6 +568,8 @@ namespace ScreenCapture
             _isPainting = true;
             _lastPoint = e.GetPosition(OverlayCanvas);
             _currentStroke = new List<UIElement>(); // 新しいストロークを開始
+            _isHorizontalLocked = false;  // ロックをリセット
+            _isVerticalLocked = false;    // ロックをリセット
             OverlayCanvas.CaptureMouse();
             e.Handled = true;
         }
@@ -580,16 +584,33 @@ namespace ScreenCapture
             // Shiftキーが押されている場合は水平または垂直の線に補正
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
             {
-                var deltaX = Math.Abs(currentPoint.X - _lastPoint.X);
-                var deltaY = Math.Abs(currentPoint.Y - _lastPoint.Y);
+                // 最初の移動で方向を決定してロック
+                if (!_isHorizontalLocked && !_isVerticalLocked)
+                {
+                    var deltaX = Math.Abs(currentPoint.X - _lastPoint.X);
+                    var deltaY = Math.Abs(currentPoint.Y - _lastPoint.Y);
+                    
+                    // 一定の距離移動するまで方向を確定しない（誤判定防止）
+                    if (deltaX > 5 || deltaY > 5)
+                    {
+                        if (deltaX > deltaY)
+                        {
+                            _isHorizontalLocked = true;  // 水平方向にロック
+                        }
+                        else
+                        {
+                            _isVerticalLocked = true;    // 垂直方向にロック
+                        }
+                    }
+                }
                 
-                // X方向とY方向の移動量を比較
-                if (deltaX > deltaY)
+                // ロックされた方向に応じて座標を補正
+                if (_isHorizontalLocked)
                 {
                     // 水平線（Y座標を固定）
                     currentPoint.Y = _lastPoint.Y;
                 }
-                else
+                else if (_isVerticalLocked)
                 {
                     // 垂直線（X座標を固定）
                     currentPoint.X = _lastPoint.X;
