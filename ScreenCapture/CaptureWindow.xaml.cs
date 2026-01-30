@@ -41,8 +41,10 @@ namespace ScreenCapture
 
             Left = screenLocation.X;
             Top = screenLocation.Y;
+            
+            // ウィンドウの幅は画像の幅に設定（ツールバーは外側に出る）
             Width = image.PixelWidth;
-            Height = image.PixelHeight;
+            // 高さはSizeToContent="Height"で自動調整される
 
             // Escキーでウィンドウを閉じる
             KeyDown += (s, e) =>
