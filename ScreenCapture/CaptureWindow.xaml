@@ -41,6 +41,25 @@
                 Visibility="Collapsed"
                 Opacity="0.5"
                 Panel.ZIndex="1000"
-                ToolTip="ウィンドウを閉じる"/>
+                ToolTip="ウィンドウを閉じる"
+                Padding="0">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                        </Border>
+                        <TextBlock Text="{TemplateBinding Content}"
+                                   FontSize="{TemplateBinding FontSize}"
+                                   FontWeight="{TemplateBinding FontWeight}"
+                                   Foreground="{TemplateBinding Foreground}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Margin="0,-3,0,0"/>
+                    </Grid>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
     </Grid>
 </Window>
