@@ -9,7 +9,8 @@ namespace ScreenCapture
 {
     public partial class CaptureWindow : Window
     {
-        private DraggableText? _selected;
+        private DraggableText? _selectedText;
+        private DraggableImage? _selectedImage;
         private bool _isDraggingWindow;
         private Point _dragStartPoint;
 
@@ -30,6 +31,9 @@ namespace ScreenCapture
                 if (e.Key == Key.Escape)
                     Close();
             };
+
+            // Ctrl+Vでクリップボードから画像を貼り付け
+            KeyDown += OnKeyDown;
 
             // ウィンドウドラッグ機能（背景をドラッグで移動）
             CaptureImage.MouseLeftButtonDown += (s, e) =>
@@ -115,19 +119,25 @@ namespace ScreenCapture
 
             menu.Items.Add(new Separator());
 
+            var pasteImage = new MenuItem { Header = "画像を貼り付け (Ctrl+V)" };
+            pasteImage.Click += (_, __) => PasteImageFromClipboard();
+            menu.Items.Add(pasteImage);
+
+            menu.Items.Add(new Separator());
+
             var bigger = new MenuItem { Header = "文字を大きく (+2)" };
             bigger.Click += (_, __) =>
             {
-                if (_selected == null) return;
-                _selected.SetStyle(_selected.GetFontSize() + 2, _selected.GetColor());
+                if (_selectedText == null) return;
+                _selectedText.SetStyle(_selectedText.GetFontSize() + 2, _selectedText.GetColor());
             };
             menu.Items.Add(bigger);
 
             var smaller = new MenuItem { Header = "文字を小さく (-2)" };
             smaller.Click += (_, __) =>
             {
-                if (_selected == null) return;
-                _selected.SetStyle(Math.Max(8, _selected.GetFontSize() - 2), _selected.GetColor());
+                if (_selectedText == null) return;
+                _selectedText.SetStyle(Math.Max(8, _selectedText.GetFontSize() - 2), _selectedText.GetColor());
             };
             menu.Items.Add(smaller);
 
@@ -136,28 +146,86 @@ namespace ScreenCapture
             var white = new MenuItem { Header = "色: 白" };
             white.Click += (_, __) =>
             {
-                if (_selected == null) return;
-                _selected.SetStyle(_selected.GetFontSize(), Colors.White);
+                if (_selectedText == null) return;
+                _selectedText.SetStyle(_selectedText.GetFontSize(), Colors.White);
             };
             menu.Items.Add(white);
 
             var red = new MenuItem { Header = "色: 赤" };
             red.Click += (_, __) =>
             {
-                if (_selected == null) return;
-                _selected.SetStyle(_selected.GetFontSize(), Colors.Red);
+                if (_selectedText == null) return;
+                _selectedText.SetStyle(_selectedText.GetFontSize(), Colors.Red);
             };
             menu.Items.Add(red);
 
             var yellow = new MenuItem { Header = "色: 黄" };
             yellow.Click += (_, __) =>
             {
-                if (_selected == null) return;
-                _selected.SetStyle(_selected.GetFontSize(), Colors.Yellow);
+                if (_selectedText == null) return;
+                _selectedText.SetStyle(_selectedText.GetFontSize(), Colors.Yellow);
             };
             menu.Items.Add(yellow);
 
             OverlayCanvas.ContextMenu = menu;
+        }
+
+        // キーダウンイベント処理
+        private void OnKeyDown(object sender, KeyEventArgs e)
+        {
+            // Ctrl+Vで画像を貼り付け
+            if (e.Key == Key.V && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                PasteImageFromClipboard();
+                e.Handled = true;
+            }
+        }
+
+        // クリップボードから画像を貼り付け
+        private void PasteImageFromClipboard()
+        {
+            if (Clipboard.ContainsImage())
+            {
+                var image = Clipboard.GetImage();
+                if (image != null)
+                {
+                    AddImageAt(new Point(50, 50), image);
+                }
+            }
+        }
+
+        // 画像をCanvasに追加
+        private void AddImageAt(Point p, BitmapSource image)
+        {
+            var di = new DraggableImage(image);
+            Canvas.SetLeft(di, p.X);
+            Canvas.SetTop(di, p.Y);
+
+            // クリックで選択状態にする
+            di.MouseLeftButtonDown += (s, e) =>
+            {
+                DeselectAllImages();
+                di.Select();
+                _selectedImage = di;
+                e.Handled = true;
+            };
+
+            OverlayCanvas.Children.Add(di);
+            _selectedImage = di;
+            di.Select();
+        }
+
+        // すべての画像の選択を解除
+        private void DeselectAllImages()
+        {
+            foreach (var child in OverlayCanvas.Children)
+            {
+                if (child is DraggableImage di)
+                {
+                    di.Deselect();
+                }
+            }
+            _selectedImage = null;
         }
 
         // すべてのテキストからフォーカスを外す
@@ -171,6 +239,9 @@ namespace ScreenCapture
                     dt.EndEdit();
                 }
             }
+
+            // 画像の選択も解除
+            DeselectAllImages();
         }
 
         private void AddTextAt(Point p)
@@ -180,16 +251,20 @@ namespace ScreenCapture
             Canvas.SetTop(dt, p.Y);
 
             // 選択中のテキストのスタイルを引き継ぐ（色変更後に追加した場合）
-            if (_selected != null)
+            if (_selectedText != null)
             {
-                dt.SetStyle(_selected.GetFontSize(), _selected.GetColor());
+                dt.SetStyle(_selectedText.GetFontSize(), _selectedText.GetColor());
             }
 
             // クリックで「選択中」にする
-            dt.MouseLeftButtonDown += (_, __) => _selected = dt;
+            dt.MouseLeftButtonDown += (_, __) =>
+            {
+                DeselectAllImages();
+                _selectedText = dt;
+            };
 
             OverlayCanvas.Children.Add(dt);
-            _selected = dt;
+            _selectedText = dt;
 
             // 追加直後は編集開始（UIが完全に描画されてからフォーカスを設定）
             Dispatcher.BeginInvoke(new System.Action(() =>
