@@ -67,11 +67,11 @@ namespace ScreenCapture
                 }
             };
 
-            // マウスが入ったら枠線を非表示
-            MouseEnter += (s, e) => BorderFrame.Visibility = Visibility.Collapsed;
+            // マウスが入ったら枠線の透明度を上げる（75%）
+            MouseEnter += (s, e) => BorderFrame.Opacity = 0.75;
             
-            // マウスが出たら枠線を表示（キャプチャエリアを視認できるように）
-            MouseLeave += (s, e) => BorderFrame.Visibility = Visibility.Visible;
+            // マウスが出たら枠線の透明度を下げる（25%）
+            MouseLeave += (s, e) => BorderFrame.Opacity = 0.25;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

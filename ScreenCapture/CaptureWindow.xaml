@@ -17,11 +17,11 @@
         <!-- 前景：テキスト等を載せる -->
         <Canvas x:Name="OverlayCanvas" Background="Transparent" Focusable="True"/>
         
-        <!-- 枠線：キャプチャエリアを視認できるように半透明の白い枠 -->
+        <!-- 枠線：キャプチャエリアを視認できるように半透明の赤い枠 -->
         <Border x:Name="BorderFrame"
-                BorderBrush="#80FF0000"
+                BorderBrush="#40FF0000"
                 BorderThickness="5"
                 IsHitTestVisible="False"
-                Visibility="Collapsed"/>
+                Opacity="0.25"/>
     </Grid>
 </Window>
