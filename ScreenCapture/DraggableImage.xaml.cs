@@ -18,6 +18,9 @@ namespace ScreenCapture
         private double _initialHeight;
         private Point _initialCanvasPosition;
 
+        // 削除イベント
+        public event EventHandler? DeleteRequested;
+
         public DraggableImage(BitmapSource image)
         {
             InitializeComponent();
@@ -67,6 +70,14 @@ namespace ScreenCapture
             BottomRightHandle.DragStarted += OnResizeStarted;
             BottomRightHandle.DragDelta += (s, e) => OnResizeDelta(e, 1, 1);
             BottomRightHandle.MouseDown += (s, e) => e.Handled = true;
+
+            // 削除ボタン
+            DeleteButton.Click += (s, e) =>
+            {
+                DeleteRequested?.Invoke(this, EventArgs.Empty);
+                e.Handled = true;
+            };
+            DeleteButton.MouseDown += (s, e) => e.Handled = true;
         }
 
         // 選択状態にする

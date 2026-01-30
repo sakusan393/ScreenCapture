@@ -217,6 +217,16 @@ namespace ScreenCapture
                 // イベントは DraggableImage 内で処理されるように伝播させる
             };
 
+            // 削除イベントを処理
+            di.DeleteRequested += (s, e) =>
+            {
+                OverlayCanvas.Children.Remove(di);
+                if (_selectedImage == di)
+                {
+                    _selectedImage = null;
+                }
+            };
+
             OverlayCanvas.Children.Add(di);
             
             // 追加直後は選択状態にする
