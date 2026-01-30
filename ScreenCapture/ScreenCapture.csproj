@@ -19,6 +19,9 @@
     <Authors>sakusan393</Authors>
     <Product>ScreenCapture</Product>
     <Description>画面キャプチャツール - テキスト・画像追加・ペイント機能付き</Description>
+    
+    <!-- アプリケーションアイコン -->
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
