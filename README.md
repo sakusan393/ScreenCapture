@@ -1,27 +1,74 @@
 # ScreenCapture
 
-画面キャプチャツール - Rapture風のスクリーンキャプチャアプリケーション
+画面キャプチャ＋注釈ツール - Rapture風のスクリーンキャプチャアプリケーション
 
-## 機能
+[![Release](https://img.shields.io/github/v/release/sakusan393/ScreenCapture)](https://github.com/sakusan393/ScreenCapture/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/sakusan393/ScreenCapture/total)](https://github.com/sakusan393/ScreenCapture/releases)
+[![License](https://img.shields.io/github/license/sakusan393/ScreenCapture)](LICENSE)
 
-- **画面キャプチャ**: ドラッグで範囲を選択してキャプチャ
-- **テキスト追加**: キャプチャした画像にテキストを追加
-- **テキスト編集**: 
-  - フォントサイズの変更（大きく/小さく）
-  - 文字色の変更（白、赤、黄色）
-  - ドラッグで移動
-  - ダブルクリックで再編集
-- **視認性**: マウスを離すと赤い枠線が表示され、キャプチャエリアが見やすい
-- **Escキー**: 選択やウィンドウをキャンセル/閉じる
+## ?? ダウンロード
+
+**[?? 最新版をダウンロード (ScreenCapture.exe)](https://github.com/sakusan393/ScreenCapture/releases/latest)**
+
+- **サイズ**: 約155MB
+- **動作環境**: Windows 10/11 (64bit)
+- **インストール不要**: ダブルクリックで即起動
+
+## ? 主な機能
+
+### ?? 画面キャプチャ
+- ドラッグで範囲を選択してキャプチャ
+- 複数モニター対応
+- Ctrl+Cでクリップボードにコピー
+
+### ?? テキスト注釈
+- 右クリックでテキスト追加
+- **8色から選択可能**（白、黒、赤、黄、緑、青、水色、マゼンタ）
+- **サイズ変更**: [+][-]ボタンまたは押しっぱなしで連続変更
+- ダブルクリックで再編集
+- ドラッグで移動
+
+### ??? 画像の貼り付け
+- **Ctrl+V**でクリップボードから画像を追加
+- リサイズ：四隅のハンドルをドラッグ
+- 回転：上部中央のハンドルをドラッグ
+- ドラッグで移動
+
+### ?? ペイント機能
+- **Ctrl**キーでペイントモード ON/OFF
+- **6色から選択**（白、黒、赤、黄、緑、青）
+- **4段階の太さ**（1, 3, 5, 10）
+- **Shift+ドラッグ**で水平・垂直の直線
+- **Ctrl+Z**でアンドゥ（元に戻す）
+- **Ctrl+Y**でリドゥ（やり直す）
+- **履歴回数設定**：10/20/50/100回から選択
+
+### ?? その他
+- マウスホバーで枠線表示・×ボタン表示
+- 複数の要素を選択で最前面に移動
+- Escキーで終了
 
 ## 使い方
 
-1. アプリを起動すると、画面が暗くなり、マウスカーソルが十字になります
-2. ドラッグして範囲を選択
-3. マウスを離すとキャプチャが完了し、ウィンドウとして表示されます
-4. 右クリックで「テキスト追加」を選択し、テキストを入力
-5. 画像やCanvas空白部分をクリックすると、テキストがドラッグ可能に
-6. テキストをダブルクリックで再編集
+1. **ScreenCapture.exe**をダブルクリックして起動
+2. マウスドラッグで範囲を選択してキャプチャ
+3. 右クリックで「テキスト追加」、またはCtrlでペイントモード
+4. Ctrl+Cでクリップボードにコピー
+5. Word/PowerPointなどに貼り付け
+
+詳細な使い方は [RELEASE.md](RELEASE.md) をご覧ください。
+
+## ?? ショートカットキー
+
+| キー | 機能 |
+|------|------|
+| **Ctrl+C** | クリップボードにコピー |
+| **Ctrl+V** | 画像を貼り付け |
+| **Ctrl** | ペイントモード ON/OFF |
+| **Shift+ドラッグ** | 水平・垂直線 |
+| **Ctrl+Z** | アンドゥ |
+| **Ctrl+Y** | リドゥ |
+| **Esc** | 終了 |
 
 ## 技術スタック
 
@@ -34,6 +81,38 @@
 - Visual Studio 2022
 - Windows 10/11
 
-## ライセンス
+## ビルド方法
 
-MIT License
+```sh
+# リポジトリをクローン
+git clone https://github.com/sakusan393/ScreenCapture.git
+cd ScreenCapture
+
+# ビルド
+dotnet build
+
+# 実行
+dotnet run --project ScreenCapture/ScreenCapture.csproj
+
+# 配布用EXEの作成
+cd ScreenCapture
+dotnet publish -c Release
+# 出力: bin\Release\net8.0-windows\win-x64\publish\ScreenCapture.exe
+```
+
+## ?? 更新履歴
+
+詳細は [Releases](https://github.com/sakusan393/ScreenCapture/releases) をご覧ください。
+
+## ?? ライセンス
+
+このソフトウェアは個人利用・商用利用ともに無料で使用できます。
+
+## ?? バグ報告・機能要望
+
+[Issues](https://github.com/sakusan393/ScreenCapture/issues) までお願いします。
+
+## ?? 作者
+
+GitHub: [@sakusan393](https://github.com/sakusan393)
+
