@@ -109,6 +109,37 @@
             <Button x:Name="PaintThickness3" Content="3" Background="Gray" ToolTip="普通"/>
             <Button x:Name="PaintThickness5" Content="5" Background="Gray" ToolTip="太い"/>
             <Button x:Name="PaintThickness10" Content="10" Background="Gray" ToolTip="極太"/>
+
+            <!-- アンドゥ・リドゥ -->
+            <Button x:Name="UndoButton"
+                    Content="↶"
+                    FontSize="18"
+                    Background="DarkGray"
+                    ToolTip="元に戻す (Ctrl+Z)"
+                    Margin="20,5,5,5"/>
+            <Button x:Name="RedoButton"
+                    Content="↷"
+                    FontSize="18"
+                    Background="DarkGray"
+                    ToolTip="やり直す (Ctrl+Y)"
+                    Margin="0,5,5,5"/>
+
+            <!-- アンドゥ回数設定 -->
+            <TextBlock Text="履歴:"
+                      Foreground="White"
+                      VerticalAlignment="Center"
+                      Margin="20,0,5,0"/>
+            <ComboBox x:Name="UndoLimitComboBox"
+                     Width="60"
+                     Height="25"
+                     Margin="0,0,10,0"
+                     VerticalAlignment="Center"
+                     SelectedIndex="2">
+                <ComboBoxItem Content="10"/>
+                <ComboBoxItem Content="20"/>
+                <ComboBoxItem Content="50"/>
+                <ComboBoxItem Content="100"/>
+            </ComboBox>
         </StackPanel>
     </Grid>
 </Window>

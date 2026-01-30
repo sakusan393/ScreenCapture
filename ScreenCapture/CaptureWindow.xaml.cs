@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -22,6 +24,11 @@ namespace ScreenCapture
         private Point _lastPoint;
         private Color _paintColor = Colors.Red;
         private double _paintThickness = 3;
+        
+        // アンドゥ・リドゥ
+        private Stack<UIElement> _undoStack = new Stack<UIElement>();
+        private Stack<UIElement> _redoStack = new Stack<UIElement>();
+        private int _undoLimit = 50;
 
         public CaptureWindow(BitmapSource image, System.Drawing.Point screenLocation)
         {
@@ -207,6 +214,22 @@ namespace ScreenCapture
                 {
                     TogglePaintMode();
                 }
+                e.Handled = true;
+                return;
+            }
+
+            // Ctrl+Zでアンドゥ
+            if (e.Key == Key.Z && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                Undo();
+                e.Handled = true;
+                return;
+            }
+
+            // Ctrl+Yでリドゥ
+            if (e.Key == Key.Y && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                Redo();
                 e.Handled = true;
                 return;
             }
@@ -469,10 +492,36 @@ namespace ScreenCapture
             PaintThickness5.Click += (_, __) => SetPaintThickness(5);
             PaintThickness10.Click += (_, __) => SetPaintThickness(10);
 
+            // アンドゥ・リドゥボタン
+            UndoButton.Click += (_, __) => Undo();
+            RedoButton.Click += (_, __) => Redo();
+
+            // アンドゥ回数設定
+            UndoLimitComboBox.SelectionChanged += (s, e) =>
+            {
+                if (UndoLimitComboBox.SelectedItem is ComboBoxItem item)
+                {
+                    _undoLimit = int.Parse(item.Content.ToString());
+                    
+                    // 現在のスタックサイズを制限に合わせる
+                    while (_undoStack.Count > _undoLimit)
+                    {
+                        var items = _undoStack.ToList();
+                        _undoStack.Clear();
+                        foreach (var element in items.Take(_undoLimit))
+                        {
+                            _undoStack.Push(element);
+                        }
+                    }
+                }
+            };
+
             // Canvasのマウスイベント（ペイント用）
             OverlayCanvas.MouseLeftButtonDown += Canvas_MouseLeftButtonDown;
             OverlayCanvas.MouseMove += Canvas_MouseMove;
             OverlayCanvas.MouseLeftButtonUp += Canvas_MouseLeftButtonUp;
+            
+            UpdateUndoRedoButtons();
         }
 
         // ペイントモードの切り替え
@@ -536,6 +585,10 @@ namespace ScreenCapture
             };
 
             OverlayCanvas.Children.Add(line);
+            
+            // アンドゥスタックに追加
+            AddToUndoStack(line);
+            
             _lastPoint = currentPoint;
         }
 
@@ -546,6 +599,89 @@ namespace ScreenCapture
 
             _isPainting = false;
             OverlayCanvas.ReleaseMouseCapture();
+        }
+
+        // アンドゥスタックに追加
+        private void AddToUndoStack(UIElement element)
+        {
+            _undoStack.Push(element);
+            
+            // スタックサイズを制限
+            if (_undoStack.Count > _undoLimit)
+            {
+                var items = _undoStack.ToList();
+                items.Reverse();
+                var oldestItem = items.First();
+                
+                // 最も古い要素をCanvasから削除
+                if (OverlayCanvas.Children.Contains(oldestItem))
+                {
+                    OverlayCanvas.Children.Remove(oldestItem);
+                }
+                
+                // スタックを再構築
+                _undoStack.Clear();
+                foreach (var item in items.Skip(1).Reverse())
+                {
+                    _undoStack.Push(item);
+                }
+            }
+            
+            // リドゥスタックをクリア（新しい操作が行われたため）
+            _redoStack.Clear();
+            
+            UpdateUndoRedoButtons();
+        }
+
+        // アンドゥ
+        private void Undo()
+        {
+            if (_undoStack.Count == 0) return;
+
+            var element = _undoStack.Pop();
+            
+            // Canvasから削除
+            if (OverlayCanvas.Children.Contains(element))
+            {
+                OverlayCanvas.Children.Remove(element);
+            }
+            
+            // リドゥスタックに追加
+            _redoStack.Push(element);
+            
+            UpdateUndoRedoButtons();
+        }
+
+        // リドゥ
+        private void Redo()
+        {
+            if (_redoStack.Count == 0) return;
+
+            var element = _redoStack.Pop();
+            
+            // Canvasに追加
+            OverlayCanvas.Children.Add(element);
+            
+            // アンドゥスタックに追加
+            _undoStack.Push(element);
+            
+            UpdateUndoRedoButtons();
+        }
+
+        // アンドゥ・リドゥボタンの有効/無効を更新
+        private void UpdateUndoRedoButtons()
+        {
+            if (UndoButton != null)
+            {
+                UndoButton.IsEnabled = _undoStack.Count > 0;
+                UndoButton.Opacity = _undoStack.Count > 0 ? 1.0 : 0.5;
+            }
+            
+            if (RedoButton != null)
+            {
+                RedoButton.IsEnabled = _redoStack.Count > 0;
+                RedoButton.Opacity = _redoStack.Count > 0 ? 1.0 : 0.5;
+            }
         }
     }
 }
