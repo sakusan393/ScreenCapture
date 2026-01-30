@@ -214,6 +214,9 @@ namespace ScreenCapture
                 di.Select();
                 _selectedImage = di;
                 
+                // 最前面に移動
+                BringToFront(di);
+                
                 // イベントは DraggableImage 内で処理されるように伝播させる
             };
 
@@ -289,6 +292,9 @@ namespace ScreenCapture
                 DeselectAllTexts();
                 dt.Select();
                 _selectedText = dt;
+                
+                // 最前面に移動
+                BringToFront(dt);
             };
 
             // 削除イベントを処理
@@ -322,6 +328,17 @@ namespace ScreenCapture
                 }
             }
             _selectedText = null;
+        }
+
+        // 要素を最前面に移動
+        private void BringToFront(UIElement element)
+        {
+            // Canvasから一度削除して、最後に追加し直すことで最前面に移動
+            if (OverlayCanvas.Children.Contains(element))
+            {
+                OverlayCanvas.Children.Remove(element);
+                OverlayCanvas.Children.Add(element);
+            }
         }
     }
 }
