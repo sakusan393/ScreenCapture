@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace ScreenCapture
 {
@@ -14,6 +15,13 @@ namespace ScreenCapture
         private DraggableImage? _selectedImage;
         private bool _isDraggingWindow;
         private Point _dragStartPoint;
+        
+        // ペイントモード関連
+        private bool _isPaintMode;
+        private bool _isPainting;
+        private Point _lastPoint;
+        private Color _paintColor = Colors.Red;
+        private double _paintThickness = 3;
 
         public CaptureWindow(BitmapSource image, System.Drawing.Point screenLocation)
         {
@@ -83,6 +91,9 @@ namespace ScreenCapture
 
             // 閉じるボタンのクリックイベント
             CloseButton.Click += (s, e) => Close();
+
+            // ペイントツールバーの初期化
+            InitializePaintToolbar();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -189,6 +200,17 @@ namespace ScreenCapture
         // キーダウンイベント処理
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
+            // Ctrlキー単独でペイントモード切り替え
+            if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
+            {
+                if (!e.IsRepeat) // キーリピートを無視
+                {
+                    TogglePaintMode();
+                }
+                e.Handled = true;
+                return;
+            }
+
             // Ctrl+Vで画像を貼り付け
             if (e.Key == Key.V && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
@@ -378,6 +400,13 @@ namespace ScreenCapture
                 // 選択を解除してバウンディングボックスを非表示
                 DeselectAllTexts();
                 DeselectAllImages();
+                
+                // ペイントツールバーも非表示
+                var wasPaintMode = _isPaintMode;
+                if (_isPaintMode)
+                {
+                    PaintToolbar.Visibility = Visibility.Collapsed;
+                }
 
                 // UIの更新を待つ
                 Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
@@ -412,11 +441,111 @@ namespace ScreenCapture
                     _selectedImage = selectedImage;
                     selectedImage.Select();
                 }
+                if (wasPaintMode)
+                {
+                    PaintToolbar.Visibility = Visibility.Visible;
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"コピーに失敗しました: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        // ペイントツールバーの初期化
+        private void InitializePaintToolbar()
+        {
+            // 色ボタン
+            PaintColorWhite.Click += (_, __) => SetPaintColor(Colors.White);
+            PaintColorBlack.Click += (_, __) => SetPaintColor(Colors.Black);
+            PaintColorRed.Click += (_, __) => SetPaintColor(Colors.Red);
+            PaintColorYellow.Click += (_, __) => SetPaintColor(Colors.Yellow);
+            PaintColorGreen.Click += (_, __) => SetPaintColor(Colors.Lime);
+            PaintColorBlue.Click += (_, __) => SetPaintColor(Colors.Blue);
+
+            // 太さボタン
+            PaintThickness1.Click += (_, __) => SetPaintThickness(1);
+            PaintThickness3.Click += (_, __) => SetPaintThickness(3);
+            PaintThickness5.Click += (_, __) => SetPaintThickness(5);
+            PaintThickness10.Click += (_, __) => SetPaintThickness(10);
+
+            // Canvasのマウスイベント（ペイント用）
+            OverlayCanvas.MouseLeftButtonDown += Canvas_MouseLeftButtonDown;
+            OverlayCanvas.MouseMove += Canvas_MouseMove;
+            OverlayCanvas.MouseLeftButtonUp += Canvas_MouseLeftButtonUp;
+        }
+
+        // ペイントモードの切り替え
+        private void TogglePaintMode()
+        {
+            _isPaintMode = !_isPaintMode;
+            PaintToolbar.Visibility = _isPaintMode ? Visibility.Visible : Visibility.Collapsed;
+            
+            if (_isPaintMode)
+            {
+                OverlayCanvas.Cursor = Cursors.Pen;
+            }
+            else
+            {
+                OverlayCanvas.Cursor = Cursors.Arrow;
+                _isPainting = false;
+            }
+        }
+
+        // ペイント色の設定
+        private void SetPaintColor(Color color)
+        {
+            _paintColor = color;
+        }
+
+        // ペイント太さの設定
+        private void SetPaintThickness(double thickness)
+        {
+            _paintThickness = thickness;
+        }
+
+        // Canvasマウスダウン
+        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!_isPaintMode) return;
+
+            _isPainting = true;
+            _lastPoint = e.GetPosition(OverlayCanvas);
+            OverlayCanvas.CaptureMouse();
+            e.Handled = true;
+        }
+
+        // Canvasマウス移動
+        private void Canvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!_isPaintMode || !_isPainting) return;
+
+            var currentPoint = e.GetPosition(OverlayCanvas);
+            
+            // 線を描画
+            var line = new Line
+            {
+                X1 = _lastPoint.X,
+                Y1 = _lastPoint.Y,
+                X2 = currentPoint.X,
+                Y2 = currentPoint.Y,
+                Stroke = new SolidColorBrush(_paintColor),
+                StrokeThickness = _paintThickness,
+                StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round
+            };
+
+            OverlayCanvas.Children.Add(line);
+            _lastPoint = currentPoint;
+        }
+
+        // Canvasマウスアップ
+        private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (!_isPaintMode) return;
+
+            _isPainting = false;
+            OverlayCanvas.ReleaseMouseCapture();
         }
     }
 }

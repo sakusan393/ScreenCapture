@@ -61,5 +61,54 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
+
+        <!-- ペイントツールバー（Ctrlキーで表示/非表示） -->
+        <StackPanel x:Name="PaintToolbar"
+                   Orientation="Horizontal"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Bottom"
+                   Margin="0,0,0,10"
+                   Visibility="Collapsed"
+                   Panel.ZIndex="1000"
+                   Background="#CC000000">
+            <StackPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Width" Value="30"/>
+                    <Setter Property="Height" Value="30"/>
+                    <Setter Property="Margin" Value="5"/>
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="BorderBrush" Value="White"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </Style>
+            </StackPanel.Resources>
+
+            <TextBlock Text="ペイントモード"
+                      Foreground="White"
+                      VerticalAlignment="Center"
+                      Margin="10,0,10,0"
+                      FontWeight="Bold"/>
+
+            <!-- 線の色選択 -->
+            <TextBlock Text="色:"
+                      Foreground="White"
+                      VerticalAlignment="Center"
+                      Margin="5,0,5,0"/>
+            <Button x:Name="PaintColorWhite" Background="White" ToolTip="白"/>
+            <Button x:Name="PaintColorBlack" Background="Black" ToolTip="黒"/>
+            <Button x:Name="PaintColorRed" Background="Red" ToolTip="赤"/>
+            <Button x:Name="PaintColorYellow" Background="Yellow" ToolTip="黄"/>
+            <Button x:Name="PaintColorGreen" Background="Lime" ToolTip="緑"/>
+            <Button x:Name="PaintColorBlue" Background="Blue" ToolTip="青"/>
+
+            <!-- 線の太さ選択 -->
+            <TextBlock Text="太さ:"
+                      Foreground="White"
+                      VerticalAlignment="Center"
+                      Margin="20,0,5,0"/>
+            <Button x:Name="PaintThickness1" Content="1" Background="Gray" ToolTip="細い"/>
+            <Button x:Name="PaintThickness3" Content="3" Background="Gray" ToolTip="普通"/>
+            <Button x:Name="PaintThickness5" Content="5" Background="Gray" ToolTip="太い"/>
+            <Button x:Name="PaintThickness10" Content="10" Background="Gray" ToolTip="極太"/>
+        </StackPanel>
     </Grid>
 </Window>
