@@ -111,7 +111,10 @@ namespace ScreenCapture
         public void StartEdit()
         {
             _isEditing = true;
+            _isSelected = true;  // 選択状態にする
             TextBox.IsHitTestVisible = true;
+            BoundingBox.Visibility = Visibility.Visible;  // バウンディングボックスを表示
+            ColorPalette.Visibility = Visibility.Visible;  // カラーパレットを表示
             TextBox.Focus();
             TextBox.SelectAll();
         }
