@@ -32,7 +32,12 @@ namespace ScreenCapture
                 _isEditing = true;
                 DragThumb.IsHitTestVisible = false;
                 TextBox.IsHitTestVisible = true;
-                BoundingBox.Visibility = Visibility.Collapsed;
+                // 編集中もバウンディングボックスとカラーパレットを表示
+                if (_isSelected)
+                {
+                    BoundingBox.Visibility = Visibility.Visible;
+                    ColorPalette.Visibility = Visibility.Visible;
+                }
             };
 
             // 編集が終わったらドラッグ有効
@@ -45,6 +50,7 @@ namespace ScreenCapture
                 if (_isSelected)
                 {
                     BoundingBox.Visibility = Visibility.Visible;
+                    ColorPalette.Visibility = Visibility.Visible;
                 }
             };
 
@@ -71,11 +77,26 @@ namespace ScreenCapture
             WhiteColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.White);
             WhiteColorButton.MouseDown += (s, e) => e.Handled = true;
 
-            YellowColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Yellow);
-            YellowColorButton.MouseDown += (s, e) => e.Handled = true;
+            BlackColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Black);
+            BlackColorButton.MouseDown += (s, e) => e.Handled = true;
 
             RedColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Red);
             RedColorButton.MouseDown += (s, e) => e.Handled = true;
+
+            YellowColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Yellow);
+            YellowColorButton.MouseDown += (s, e) => e.Handled = true;
+
+            GreenColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Lime);
+            GreenColorButton.MouseDown += (s, e) => e.Handled = true;
+
+            BlueColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Blue);
+            BlueColorButton.MouseDown += (s, e) => e.Handled = true;
+
+            CyanColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Cyan);
+            CyanColorButton.MouseDown += (s, e) => e.Handled = true;
+
+            MagentaColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Magenta);
+            MagentaColorButton.MouseDown += (s, e) => e.Handled = true;
 
             // 削除ボタン
             DeleteButton.Click += (s, e) =>
@@ -108,10 +129,8 @@ namespace ScreenCapture
         public void Select()
         {
             _isSelected = true;
-            if (!_isEditing)
-            {
-                BoundingBox.Visibility = Visibility.Visible;
-            }
+            BoundingBox.Visibility = Visibility.Visible;
+            ColorPalette.Visibility = Visibility.Visible;
         }
 
         // 選択解除
@@ -119,6 +138,7 @@ namespace ScreenCapture
         {
             _isSelected = false;
             BoundingBox.Visibility = Visibility.Collapsed;
+            ColorPalette.Visibility = Visibility.Collapsed;
         }
 
         public bool IsSelected => _isSelected;
