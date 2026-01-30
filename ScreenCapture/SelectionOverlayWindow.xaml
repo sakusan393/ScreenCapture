@@ -1,0 +1,27 @@
+﻿<Window x:Class="ScreenCapture.SelectionOverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        MouseDown="OnMouseDown"
+        MouseMove="OnMouseMove"
+        Focusable="True"
+        MouseUp="OnMouseUp">
+    <Canvas x:Name="Root">
+        <!-- 暗幕 -->
+        <Rectangle x:Name="Dim"
+                   Fill="#66000000"
+                   Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}}"
+                   Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Window}}"/>
+        <!-- 選択矩形 -->
+        <Rectangle x:Name="SelectionRect"
+                   Visibility="Collapsed"
+                   Stroke="DodgerBlue"
+                   StrokeThickness="2"
+                   Fill="#220099FF"/>
+    </Canvas>
+</Window>
