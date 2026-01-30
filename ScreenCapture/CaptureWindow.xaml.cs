@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -123,6 +124,10 @@ namespace ScreenCapture
             pasteImage.Click += (_, __) => PasteImageFromClipboard();
             menu.Items.Add(pasteImage);
 
+            var copyComposite = new MenuItem { Header = "全体をコピー (Ctrl+C)" };
+            copyComposite.Click += (_, __) => CopyCompositeToClipboard();
+            menu.Items.Add(copyComposite);
+
             menu.Items.Add(new Separator());
 
             var bigger = new MenuItem { Header = "文字を大きく (+2)" };
@@ -177,6 +182,13 @@ namespace ScreenCapture
             if (e.Key == Key.V && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
                 PasteImageFromClipboard();
+                e.Handled = true;
+            }
+            
+            // Ctrl+Cで合成画像をクリップボードにコピー
+            if (e.Key == Key.C && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                CopyCompositeToClipboard();
                 e.Handled = true;
             }
         }
@@ -338,6 +350,61 @@ namespace ScreenCapture
             {
                 OverlayCanvas.Children.Remove(element);
                 OverlayCanvas.Children.Add(element);
+            }
+        }
+
+        // 合成画像をクリップボードにコピー
+        private void CopyCompositeToClipboard()
+        {
+            try
+            {
+                // すべての選択状態を一時的に解除（バウンディングボックスを非表示）
+                var wasTextSelected = _selectedText != null;
+                var wasImageSelected = _selectedImage != null;
+                var selectedText = _selectedText;
+                var selectedImage = _selectedImage;
+
+                // 選択を解除してバウンディングボックスを非表示
+                DeselectAllTexts();
+                DeselectAllImages();
+
+                // UIの更新を待つ
+                Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
+
+                // ウィンドウ全体のサイズを取得
+                int width = (int)ActualWidth;
+                int height = (int)ActualHeight;
+
+                // RenderTargetBitmapを使用してウィンドウをキャプチャ
+                var renderTarget = new RenderTargetBitmap(
+                    width,
+                    height,
+                    96, // dpiX
+                    96, // dpiY
+                    PixelFormats.Pbgra32);
+
+                // Gridをレンダリング（CaptureImageとOverlayCanvasを含む）
+                var grid = (Grid)Content;
+                renderTarget.Render(grid);
+
+                // クリップボードにコピー
+                Clipboard.SetImage(renderTarget);
+
+                // 選択状態を復元
+                if (wasTextSelected && selectedText != null)
+                {
+                    _selectedText = selectedText;
+                    selectedText.Select();
+                }
+                if (wasImageSelected && selectedImage != null)
+                {
+                    _selectedImage = selectedImage;
+                    selectedImage.Select();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"コピーに失敗しました: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
