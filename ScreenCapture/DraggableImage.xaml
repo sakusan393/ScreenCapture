@@ -13,11 +13,19 @@
             </Image.RenderTransform>
         </Image>
 
+        <Thumb x:Name="DragThumb"
+               Cursor="SizeAll"
+               Background="Transparent"
+               Opacity="0"
+               IsHitTestVisible="True"
+               Panel.ZIndex="0"/>
+
         <Border x:Name="BoundingBox"
                 BorderBrush="#FF00BFFF"
                 BorderThickness="2"
                 Visibility="Collapsed"
-                IsHitTestVisible="True">
+                IsHitTestVisible="True"
+                Panel.ZIndex="1">
             <Grid>
                 <Thumb x:Name="TopLeftHandle"
                        Width="12" Height="12"
@@ -27,7 +35,8 @@
                        BorderThickness="2"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Top"
-                       Margin="-6,-6,0,0"/>
+                       Margin="-6,-6,0,0"
+                       Panel.ZIndex="2"/>
                 
                 <Thumb x:Name="TopRightHandle"
                        Width="12" Height="12"
@@ -37,7 +46,8 @@
                        BorderThickness="2"
                        HorizontalAlignment="Right"
                        VerticalAlignment="Top"
-                       Margin="0,-6,-6,0"/>
+                       Margin="0,-6,-6,0"
+                       Panel.ZIndex="2"/>
                 
                 <Thumb x:Name="BottomLeftHandle"
                        Width="12" Height="12"
@@ -47,7 +57,8 @@
                        BorderThickness="2"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Bottom"
-                       Margin="-6,0,0,-6"/>
+                       Margin="-6,0,0,-6"
+                       Panel.ZIndex="2"/>
                 
                 <Thumb x:Name="BottomRightHandle"
                        Width="12" Height="12"
@@ -57,7 +68,8 @@
                        BorderThickness="2"
                        HorizontalAlignment="Right"
                        VerticalAlignment="Bottom"
-                       Margin="0,0,-6,-6"/>
+                       Margin="0,0,-6,-6"
+                       Panel.ZIndex="2"/>
 
                 <Thumb x:Name="RotateHandle"
                        Width="12" Height="12"
@@ -67,7 +79,8 @@
                        BorderThickness="2"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Top"
-                       Margin="0,-26,0,0"/>
+                       Margin="0,-26,0,0"
+                       Panel.ZIndex="2"/>
 
                 <Button x:Name="DeleteButton"
                         Width="20" Height="20"
@@ -82,14 +95,9 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
                         Margin="0,2,2,0"
-                        Padding="0,-2,0,0"/>
+                        Padding="0,-2,0,0"
+                        Panel.ZIndex="10"/>
             </Grid>
         </Border>
-
-        <Thumb x:Name="DragThumb"
-               Cursor="SizeAll"
-               Background="Transparent"
-               Opacity="0"
-               IsHitTestVisible="True"/>
     </Grid>
 </UserControl>
