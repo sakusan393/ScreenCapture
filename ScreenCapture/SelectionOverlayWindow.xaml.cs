@@ -83,8 +83,12 @@ namespace ScreenCapture
             System.Threading.Thread.Sleep(50); // 画面描画の完了を確実にするため
             
             var bmp = CaptureScreen(screenRect);
+            var bitmapSource = ToBitmapSource(bmp);
 
-            var cap = new CaptureWindow(ToBitmapSource(bmp), screenRect.Location);
+            // キャプチャした画像をクリップボードに保存
+            Clipboard.SetImage(bitmapSource);
+
+            var cap = new CaptureWindow(bitmapSource, screenRect.Location);
             cap.Show();
 
             Close();
