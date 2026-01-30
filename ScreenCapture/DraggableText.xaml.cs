@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace ScreenCapture
 {
@@ -11,6 +12,8 @@ namespace ScreenCapture
     {
         private bool _isSelected;
         private bool _isEditing;
+        private DispatcherTimer? _fontSizeTimer;
+        private int _fontSizeDirection; // 1: 拡大, -1: 縮小
 
         // XAMLの TextBox へのアクセス用プロパティ
         public System.Windows.Controls.TextBox TextBoxControl => TextBox;
@@ -37,6 +40,7 @@ namespace ScreenCapture
                 {
                     BoundingBox.Visibility = Visibility.Visible;
                     ColorPalette.Visibility = Visibility.Visible;
+                    FontSizeButtons.Visibility = Visibility.Visible;
                 }
             };
 
@@ -51,6 +55,7 @@ namespace ScreenCapture
                 {
                     BoundingBox.Visibility = Visibility.Visible;
                     ColorPalette.Visibility = Visibility.Visible;
+                    FontSizeButtons.Visibility = Visibility.Visible;
                 }
             };
 
@@ -98,11 +103,15 @@ namespace ScreenCapture
             MagentaColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Magenta);
             MagentaColorButton.MouseDown += (s, e) => e.Handled = true;
 
-            // 文字サイズ変更ボタン
-            FontSizeUpButton.Click += (_, __) => SetStyle(GetFontSize() + 2, GetColor());
+            // 文字サイズ変更ボタン（押しっぱなし対応）
+            FontSizeUpButton.PreviewMouseLeftButtonDown += (_, __) => StartFontSizeChange(1);
+            FontSizeUpButton.PreviewMouseLeftButtonUp += (_, __) => StopFontSizeChange();
+            FontSizeUpButton.MouseLeave += (_, __) => StopFontSizeChange();
             FontSizeUpButton.MouseDown += (s, e) => e.Handled = true;
 
-            FontSizeDownButton.Click += (_, __) => SetStyle(Math.Max(8, GetFontSize() - 2), GetColor());
+            FontSizeDownButton.PreviewMouseLeftButtonDown += (_, __) => StartFontSizeChange(-1);
+            FontSizeDownButton.PreviewMouseLeftButtonUp += (_, __) => StopFontSizeChange();
+            FontSizeDownButton.MouseLeave += (_, __) => StopFontSizeChange();
             FontSizeDownButton.MouseDown += (s, e) => e.Handled = true;
 
             // 削除ボタン
@@ -122,6 +131,7 @@ namespace ScreenCapture
             TextBox.IsHitTestVisible = true;
             BoundingBox.Visibility = Visibility.Visible;  // バウンディングボックスを表示
             ColorPalette.Visibility = Visibility.Visible;  // カラーパレットを表示
+            FontSizeButtons.Visibility = Visibility.Visible;  // フォントサイズボタンを表示
             TextBox.Focus();
             TextBox.SelectAll();
         }
@@ -141,6 +151,7 @@ namespace ScreenCapture
             _isSelected = true;
             BoundingBox.Visibility = Visibility.Visible;
             ColorPalette.Visibility = Visibility.Visible;
+            FontSizeButtons.Visibility = Visibility.Visible;
         }
 
         // 選択解除
@@ -149,6 +160,8 @@ namespace ScreenCapture
             _isSelected = false;
             BoundingBox.Visibility = Visibility.Collapsed;
             ColorPalette.Visibility = Visibility.Collapsed;
+            FontSizeButtons.Visibility = Visibility.Collapsed;
+            StopFontSizeChange();
         }
 
         public bool IsSelected => _isSelected;
@@ -164,6 +177,41 @@ namespace ScreenCapture
 
         public Color GetColor()
             => TextBox.Foreground is SolidColorBrush b ? b.Color : Colors.Red;
+
+        // 文字サイズ変更の開始（押しっぱなし対応）
+        private void StartFontSizeChange(int direction)
+        {
+            _fontSizeDirection = direction;
+            
+            // 最初の1回を即座に実行
+            ChangeFontSize();
+            
+            // タイマーを開始（100msごとに実行）
+            if (_fontSizeTimer == null)
+            {
+                _fontSizeTimer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(100)
+                };
+                _fontSizeTimer.Tick += (s, e) => ChangeFontSize();
+            }
+            
+            _fontSizeTimer.Start();
+        }
+
+        // 文字サイズ変更の停止
+        private void StopFontSizeChange()
+        {
+            _fontSizeTimer?.Stop();
+        }
+
+        // 文字サイズを変更
+        private void ChangeFontSize()
+        {
+            var newSize = GetFontSize() + (_fontSizeDirection * 2);
+            newSize = Math.Max(8, Math.Min(200, newSize)); // 8～200の範囲
+            SetStyle(newSize, GetColor());
+        }
     }
 }
 

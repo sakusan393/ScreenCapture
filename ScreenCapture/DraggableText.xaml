@@ -64,39 +64,6 @@
                 IsHitTestVisible="True"
                 Panel.ZIndex="1">
             <Grid>
-                <!-- 文字サイズ変更ボタン（左上） -->
-                <StackPanel Orientation="Horizontal"
-                           HorizontalAlignment="Left"
-                           VerticalAlignment="Top"
-                           Margin="2,2,0,0"
-                           Panel.ZIndex="10">
-                    <Button x:Name="FontSizeUpButton"
-                            Width="20" Height="20"
-                            Content="+"
-                            FontSize="14"
-                            FontWeight="Bold"
-                            Cursor="Hand"
-                            Background="White"
-                            Foreground="Black"
-                            BorderBrush="#FF00BFFF"
-                            BorderThickness="2"
-                            Margin="0,0,2,0"
-                            ToolTip="文字を大きく"
-                            Padding="0,-2,0,0"/>
-                    <Button x:Name="FontSizeDownButton"
-                            Width="20" Height="20"
-                            Content="-"
-                            FontSize="14"
-                            FontWeight="Bold"
-                            Cursor="Hand"
-                            Background="White"
-                            Foreground="Black"
-                            BorderBrush="#FF00BFFF"
-                            BorderThickness="2"
-                            ToolTip="文字を小さく"
-                            Padding="0,-2,0,0"/>
-                </StackPanel>
-
                 <!-- 削除ボタン -->
                 <Button x:Name="DeleteButton"
                         Width="20" Height="20"
@@ -115,6 +82,41 @@
                         Panel.ZIndex="10"/>
             </Grid>
         </Border>
+
+        <!-- 文字サイズ変更ボタン（色ボタンの上に配置） -->
+        <StackPanel x:Name="FontSizeButtons"
+                   Orientation="Horizontal"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Top"
+                   Margin="0,-56,0,0"
+                   Visibility="Collapsed"
+                   Panel.ZIndex="10">
+            <Button x:Name="FontSizeUpButton"
+                    Width="20" Height="20"
+                    Content="+"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Cursor="Hand"
+                    Background="White"
+                    Foreground="Black"
+                    BorderBrush="#FF00BFFF"
+                    BorderThickness="2"
+                    Margin="0,0,2,0"
+                    ToolTip="文字を大きく"
+                    Padding="0,-2,0,0"/>
+            <Button x:Name="FontSizeDownButton"
+                    Width="20" Height="20"
+                    Content="-"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Cursor="Hand"
+                    Background="White"
+                    Foreground="Black"
+                    BorderBrush="#FF00BFFF"
+                    BorderThickness="2"
+                    ToolTip="文字を小さく"
+                    Padding="0,-2,0,0"/>
+        </StackPanel>
 
         <!-- 色変更ボタン（バウンディングボックスの外、上に配置） -->
         <StackPanel x:Name="ColorPalette"
