@@ -197,20 +197,30 @@ namespace ScreenCapture
         // 画像をCanvasに追加
         private void AddImageAt(Point p, BitmapSource image)
         {
+            // まず既存の選択を解除
+            DeselectAllImages();
+
             var di = new DraggableImage(image);
             Canvas.SetLeft(di, p.X);
             Canvas.SetTop(di, p.Y);
 
-            // クリックで選択状態にする
+            // クリックで選択状態にする（DraggableImage内のMouseLeftButtonDownと連携）
             di.MouseLeftButtonDown += (s, e) =>
             {
+                if (di.IsSelected)
+                {
+                    // 既に選択されている場合は何もしない
+                    return;
+                }
+
                 DeselectAllImages();
                 di.Select();
                 _selectedImage = di;
-                e.Handled = true;
             };
 
             OverlayCanvas.Children.Add(di);
+            
+            // 追加直後は選択状態にする
             _selectedImage = di;
             di.Select();
         }

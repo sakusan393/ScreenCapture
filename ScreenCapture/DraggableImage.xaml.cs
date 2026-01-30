@@ -38,28 +38,37 @@ namespace ScreenCapture
             };
 
             // クリックで選択状態を切り替え
-            DragThumb.MouseDown += (s, e) =>
+            MouseLeftButtonDown += (s, e) =>
             {
-                Select();
+                // イベントが子要素から来た場合は、選択状態にする
+                if (!_isSelected)
+                {
+                    Select();
+                }
                 e.Handled = true;
             };
 
             // 回転ハンドル
             RotateHandle.DragStarted += OnRotateStarted;
             RotateHandle.DragDelta += OnRotateDelta;
+            RotateHandle.MouseDown += (s, e) => e.Handled = true; // 親への伝播を防ぐ
 
             // リサイズハンドル
             TopLeftHandle.DragStarted += OnResizeStarted;
             TopLeftHandle.DragDelta += (s, e) => OnResizeDelta(e, -1, -1);
+            TopLeftHandle.MouseDown += (s, e) => e.Handled = true;
 
             TopRightHandle.DragStarted += OnResizeStarted;
             TopRightHandle.DragDelta += (s, e) => OnResizeDelta(e, 1, -1);
+            TopRightHandle.MouseDown += (s, e) => e.Handled = true;
 
             BottomLeftHandle.DragStarted += OnResizeStarted;
             BottomLeftHandle.DragDelta += (s, e) => OnResizeDelta(e, -1, 1);
+            BottomLeftHandle.MouseDown += (s, e) => e.Handled = true;
 
             BottomRightHandle.DragStarted += OnResizeStarted;
             BottomRightHandle.DragDelta += (s, e) => OnResizeDelta(e, 1, 1);
+            BottomRightHandle.MouseDown += (s, e) => e.Handled = true;
         }
 
         // 選択状態にする

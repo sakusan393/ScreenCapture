@@ -17,7 +17,7 @@
                 BorderBrush="#FF00BFFF"
                 BorderThickness="2"
                 Visibility="Collapsed"
-                IsHitTestVisible="False">
+                IsHitTestVisible="True">
             <Grid>
                 <Thumb x:Name="TopLeftHandle"
                        Width="12" Height="12"
