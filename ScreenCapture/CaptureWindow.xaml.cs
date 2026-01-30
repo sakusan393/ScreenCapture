@@ -425,12 +425,15 @@ namespace ScreenCapture
                 DeselectAllTexts();
                 DeselectAllImages();
                 
-                // ペイントツールバーも非表示
+                // UI要素を一時的に非表示
                 var wasPaintMode = _isPaintMode;
-                if (_isPaintMode)
-                {
-                    PaintToolbar.Visibility = Visibility.Collapsed;
-                }
+                var paintToolbarVisibility = PaintToolbar.Visibility;
+                var borderFrameVisibility = BorderFrame.Visibility;
+                var closeButtonVisibility = CloseButton.Visibility;
+                
+                PaintToolbar.Visibility = Visibility.Collapsed;
+                BorderFrame.Visibility = Visibility.Collapsed;
+                CloseButton.Visibility = Visibility.Collapsed;
 
                 // UIの更新を待つ
                 Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
@@ -454,6 +457,11 @@ namespace ScreenCapture
                 // クリップボードにコピー
                 Clipboard.SetImage(renderTarget);
 
+                // UI要素を復元
+                PaintToolbar.Visibility = paintToolbarVisibility;
+                BorderFrame.Visibility = borderFrameVisibility;
+                CloseButton.Visibility = closeButtonVisibility;
+
                 // 選択状態を復元
                 if (wasTextSelected && selectedText != null)
                 {
@@ -464,10 +472,6 @@ namespace ScreenCapture
                 {
                     _selectedImage = selectedImage;
                     selectedImage.Select();
-                }
-                if (wasPaintMode)
-                {
-                    PaintToolbar.Visibility = Visibility.Visible;
                 }
             }
             catch (Exception ex)
