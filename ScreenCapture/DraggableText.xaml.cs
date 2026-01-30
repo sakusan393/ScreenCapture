@@ -1,14 +1,22 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace ScreenCapture
 {
     public partial class DraggableText : UserControl
     {
+        private bool _isSelected;
+        private bool _isEditing;
+
         // XAMLの TextBox へのアクセス用プロパティ
         public System.Windows.Controls.TextBox TextBoxControl => TextBox;
+
+        // 削除イベント
+        public event EventHandler? DeleteRequested;
 
         public DraggableText()
         {
@@ -21,17 +29,26 @@ namespace ScreenCapture
             // 編集中はドラッグ無効（入力を優先）
             TextBox.GotFocus += (_, __) =>
             {
+                _isEditing = true;
                 DragThumb.IsHitTestVisible = false;
                 TextBox.IsHitTestVisible = true;
+                BoundingBox.Visibility = Visibility.Collapsed;
             };
 
-            // 編集が終わったらドラッグ有効（TextBoxを透過してThumbでドラッグ可能に）
+            // 編集が終わったらドラッグ有効
             TextBox.LostFocus += (_, __) =>
             {
+                _isEditing = false;
                 DragThumb.IsHitTestVisible = true;
                 TextBox.IsHitTestVisible = false;
+                
+                if (_isSelected)
+                {
+                    BoundingBox.Visibility = Visibility.Visible;
+                }
             };
 
+            // ドラッグ
             DragThumb.DragDelta += (s, e) =>
             {
                 var left = Canvas.GetLeft(this);
@@ -44,25 +61,73 @@ namespace ScreenCapture
                 Canvas.SetTop(this, top + e.VerticalChange);
             };
 
-            // Thumbをダブルクリックしたら編集モードに入る
-            DragThumb.MouseDoubleClick += (_, __) =>
+            // ダブルクリックで編集モードに入る
+            MouseDoubleClick += (_, __) =>
             {
-                TextBox.Focus();
-                TextBox.SelectAll();
+                StartEdit();
             };
+
+            // 色変更ボタン
+            WhiteColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.White);
+            WhiteColorButton.MouseDown += (s, e) => e.Handled = true;
+
+            YellowColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Yellow);
+            YellowColorButton.MouseDown += (s, e) => e.Handled = true;
+
+            RedColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Red);
+            RedColorButton.MouseDown += (s, e) => e.Handled = true;
+
+            // 削除ボタン
+            DeleteButton.Click += (s, e) =>
+            {
+                DeleteRequested?.Invoke(this, EventArgs.Empty);
+                e.Handled = true;
+            };
+            DeleteButton.MouseDown += (s, e) => e.Handled = true;
         }
 
-        // 外部から編集モードを終了できるメソッド
+        // 編集開始
+        public void StartEdit()
+        {
+            _isEditing = true;
+            TextBox.IsHitTestVisible = true;
+            TextBox.Focus();
+            TextBox.SelectAll();
+        }
+
+        // 編集終了
         public void EndEdit()
         {
-            // TextBoxからフォーカスを外す（別の要素にフォーカスを移す）
-            DragThumb.Focus();
+            if (_isEditing)
+            {
+                DragThumb.Focus();
+            }
         }
+
+        // 選択状態にする
+        public void Select()
+        {
+            _isSelected = true;
+            if (!_isEditing)
+            {
+                BoundingBox.Visibility = Visibility.Visible;
+            }
+        }
+
+        // 選択解除
+        public void Deselect()
+        {
+            _isSelected = false;
+            BoundingBox.Visibility = Visibility.Collapsed;
+        }
+
+        public bool IsSelected => _isSelected;
 
         public void SetStyle(double fontSize, Color color)
         {
             TextBox.FontSize = fontSize;
             TextBox.Foreground = new SolidColorBrush(color);
+            TextBox.CaretBrush = new SolidColorBrush(color);
         }
 
         public double GetFontSize() => TextBox.FontSize;
@@ -71,3 +136,4 @@ namespace ScreenCapture
             => TextBox.Foreground is SolidColorBrush b ? b.Color : Colors.Yellow;
     }
 }
+

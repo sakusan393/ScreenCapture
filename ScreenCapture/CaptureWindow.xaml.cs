@@ -261,10 +261,17 @@ namespace ScreenCapture
 
             // 画像の選択も解除
             DeselectAllImages();
+            
+            // テキストの選択も解除
+            DeselectAllTexts();
         }
 
         private void AddTextAt(Point p)
         {
+            // 他の選択を解除
+            DeselectAllImages();
+            DeselectAllTexts();
+
             var dt = new DraggableText();
             Canvas.SetLeft(dt, p.X);
             Canvas.SetTop(dt, p.Y);
@@ -275,11 +282,23 @@ namespace ScreenCapture
                 dt.SetStyle(_selectedText.GetFontSize(), _selectedText.GetColor());
             }
 
-            // クリックで「選択中」にする
-            dt.MouseLeftButtonDown += (_, __) =>
+            // クリックで選択状態にする
+            dt.PreviewMouseLeftButtonDown += (s, e) =>
             {
                 DeselectAllImages();
+                DeselectAllTexts();
+                dt.Select();
                 _selectedText = dt;
+            };
+
+            // 削除イベントを処理
+            dt.DeleteRequested += (s, e) =>
+            {
+                OverlayCanvas.Children.Remove(dt);
+                if (_selectedText == dt)
+                {
+                    _selectedText = null;
+                }
             };
 
             OverlayCanvas.Children.Add(dt);
@@ -288,9 +307,21 @@ namespace ScreenCapture
             // 追加直後は編集開始（UIが完全に描画されてからフォーカスを設定）
             Dispatcher.BeginInvoke(new System.Action(() =>
             {
-                dt.TextBoxControl.Focus();
-                dt.TextBoxControl.CaretIndex = 0;
+                dt.StartEdit();
             }), System.Windows.Threading.DispatcherPriority.Input);
+        }
+
+        // すべてのテキストの選択を解除
+        private void DeselectAllTexts()
+        {
+            foreach (var child in OverlayCanvas.Children)
+            {
+                if (child is DraggableText dt)
+                {
+                    dt.Deselect();
+                }
+            }
+            _selectedText = null;
         }
     }
 }
