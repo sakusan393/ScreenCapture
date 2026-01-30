@@ -577,6 +577,25 @@ namespace ScreenCapture
 
             var currentPoint = e.GetPosition(OverlayCanvas);
             
+            // Shiftキーが押されている場合は水平または垂直の線に補正
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+            {
+                var deltaX = Math.Abs(currentPoint.X - _lastPoint.X);
+                var deltaY = Math.Abs(currentPoint.Y - _lastPoint.Y);
+                
+                // X方向とY方向の移動量を比較
+                if (deltaX > deltaY)
+                {
+                    // 水平線（Y座標を固定）
+                    currentPoint.Y = _lastPoint.Y;
+                }
+                else
+                {
+                    // 垂直線（X座標を固定）
+                    currentPoint.X = _lastPoint.X;
+                }
+            }
+            
             // 線を描画
             var line = new Line
             {
