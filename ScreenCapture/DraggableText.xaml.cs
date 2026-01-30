@@ -98,6 +98,13 @@ namespace ScreenCapture
             MagentaColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Magenta);
             MagentaColorButton.MouseDown += (s, e) => e.Handled = true;
 
+            // 文字サイズ変更ボタン
+            FontSizeUpButton.Click += (_, __) => SetStyle(GetFontSize() + 2, GetColor());
+            FontSizeUpButton.MouseDown += (s, e) => e.Handled = true;
+
+            FontSizeDownButton.Click += (_, __) => SetStyle(Math.Max(8, GetFontSize() - 2), GetColor());
+            FontSizeDownButton.MouseDown += (s, e) => e.Handled = true;
+
             // 削除ボタン
             DeleteButton.Click += (s, e) =>
             {
@@ -156,7 +163,7 @@ namespace ScreenCapture
         public double GetFontSize() => TextBox.FontSize;
 
         public Color GetColor()
-            => TextBox.Foreground is SolidColorBrush b ? b.Color : Colors.Yellow;
+            => TextBox.Foreground is SolidColorBrush b ? b.Color : Colors.Red;
     }
 }
 

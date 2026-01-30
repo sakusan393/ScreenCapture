@@ -7,13 +7,13 @@
                  Text=""
                  MinWidth="50"
                  MinHeight="30"
-                 Foreground="Yellow"
+                 Foreground="Red"
                  FontSize="28"
                  FontWeight="Bold"
                  AcceptsReturn="True"
                  TextWrapping="Wrap"
                  IsReadOnly="False"
-                 CaretBrush="Yellow"
+                 CaretBrush="Red"
                  IsHitTestVisible="True"
                  Panel.ZIndex="0">
             <TextBox.Style>
@@ -64,6 +64,39 @@
                 IsHitTestVisible="True"
                 Panel.ZIndex="1">
             <Grid>
+                <!-- 文字サイズ変更ボタン（左上） -->
+                <StackPanel Orientation="Horizontal"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Margin="2,2,0,0"
+                           Panel.ZIndex="10">
+                    <Button x:Name="FontSizeUpButton"
+                            Width="20" Height="20"
+                            Content="+"
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Cursor="Hand"
+                            Background="White"
+                            Foreground="Black"
+                            BorderBrush="#FF00BFFF"
+                            BorderThickness="2"
+                            Margin="0,0,2,0"
+                            ToolTip="文字を大きく"
+                            Padding="0,-2,0,0"/>
+                    <Button x:Name="FontSizeDownButton"
+                            Width="20" Height="20"
+                            Content="-"
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Cursor="Hand"
+                            Background="White"
+                            Foreground="Black"
+                            BorderBrush="#FF00BFFF"
+                            BorderThickness="2"
+                            ToolTip="文字を小さく"
+                            Padding="0,-2,0,0"/>
+                </StackPanel>
+
                 <!-- 削除ボタン -->
                 <Button x:Name="DeleteButton"
                         Width="20" Height="20"
