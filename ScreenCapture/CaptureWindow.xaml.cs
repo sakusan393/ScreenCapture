@@ -204,18 +204,17 @@ namespace ScreenCapture
             Canvas.SetLeft(di, p.X);
             Canvas.SetTop(di, p.Y);
 
-            // クリックで選択状態にする（DraggableImage内のMouseLeftButtonDownと連携）
-            di.MouseLeftButtonDown += (s, e) =>
+            // クリックで選択状態にする
+            di.PreviewMouseLeftButtonDown += (s, e) =>
             {
-                if (di.IsSelected)
-                {
-                    // 既に選択されている場合は何もしない
-                    return;
-                }
-
+                // 他の画像の選択を解除
                 DeselectAllImages();
+                
+                // この画像を選択
                 di.Select();
                 _selectedImage = di;
+                
+                // イベントは DraggableImage 内で処理されるように伝播させる
             };
 
             OverlayCanvas.Children.Add(di);

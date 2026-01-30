@@ -13,8 +13,10 @@ namespace ScreenCapture
         private bool _isSelected;
         private Point _rotateStartPoint;
         private double _rotateStartAngle;
-        private Point _resizeStartPoint;
-        private Size _resizeStartSize;
+        private Point _dragStartPosition;
+        private double _initialWidth;
+        private double _initialHeight;
+        private Point _initialCanvasPosition;
 
         public DraggableImage(BitmapSource image)
         {
@@ -37,15 +39,11 @@ namespace ScreenCapture
                 Canvas.SetTop(this, top + e.VerticalChange);
             };
 
-            // クリックで選択状態を切り替え
+            // クリックで選択状態を切り替え（イベントは伝播させる）
             MouseLeftButtonDown += (s, e) =>
             {
-                // イベントが子要素から来た場合は、選択状態にする
-                if (!_isSelected)
-                {
-                    Select();
-                }
-                e.Handled = true;
+                // 常に選択状態にする（CaptureWindowで他の選択を解除済み）
+                Select();
             };
 
             // 回転ハンドル
@@ -115,15 +113,26 @@ namespace ScreenCapture
         // リサイズ開始
         private void OnResizeStarted(object sender, DragStartedEventArgs e)
         {
-            _resizeStartPoint = Mouse.GetPosition(Parent as UIElement);
-            _resizeStartSize = new Size(ActualWidth, ActualHeight);
+            _dragStartPosition = Mouse.GetPosition(Parent as UIElement);
+            _initialWidth = ActualWidth;
+            _initialHeight = ActualHeight;
+            
+            var left = Canvas.GetLeft(this);
+            var top = Canvas.GetTop(this);
+            if (double.IsNaN(left)) left = 0;
+            if (double.IsNaN(top)) top = 0;
+            _initialCanvasPosition = new Point(left, top);
         }
 
         // リサイズ中
         private void OnResizeDelta(DragDeltaEventArgs e, int xDirection, int yDirection)
         {
-            var newWidth = _resizeStartSize.Width + e.HorizontalChange * xDirection * 2;
-            var newHeight = _resizeStartSize.Height + e.VerticalChange * yDirection * 2;
+            var currentPosition = Mouse.GetPosition(Parent as UIElement);
+            var delta = currentPosition - _dragStartPosition;
+
+            // 新しいサイズを計算
+            var newWidth = _initialWidth + delta.X * xDirection;
+            var newHeight = _initialHeight + delta.Y * yDirection;
 
             // 最小サイズを設定
             newWidth = Math.Max(50, newWidth);
@@ -132,16 +141,39 @@ namespace ScreenCapture
             // アスペクト比を維持する場合
             if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
             {
-                var aspectRatio = _resizeStartSize.Width / _resizeStartSize.Height;
-                newHeight = newWidth / aspectRatio;
+                var aspectRatio = _initialWidth / _initialHeight;
+                var widthByHeight = newHeight * aspectRatio;
+                var heightByWidth = newWidth / aspectRatio;
+                
+                if (Math.Abs(newWidth - _initialWidth) > Math.Abs(newHeight - _initialHeight))
+                {
+                    newHeight = heightByWidth;
+                }
+                else
+                {
+                    newWidth = widthByHeight;
+                }
             }
 
+            // サイズを更新
             Width = newWidth;
             Height = newHeight;
 
-            // スケールを更新
-            ScaleTransform.ScaleX = newWidth / (ImageControl.Source as BitmapSource).PixelWidth;
-            ScaleTransform.ScaleY = newHeight / (ImageControl.Source as BitmapSource).PixelHeight;
+            // 位置を調整（左上や上側のハンドルをドラッグする場合）
+            var newLeft = _initialCanvasPosition.X;
+            var newTop = _initialCanvasPosition.Y;
+
+            if (xDirection < 0)
+            {
+                newLeft = _initialCanvasPosition.X - (newWidth - _initialWidth);
+            }
+            if (yDirection < 0)
+            {
+                newTop = _initialCanvasPosition.Y - (newHeight - _initialHeight);
+            }
+
+            Canvas.SetLeft(this, newLeft);
+            Canvas.SetTop(this, newTop);
         }
     }
 }
