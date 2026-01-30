@@ -26,9 +26,10 @@ namespace ScreenCapture
         private double _paintThickness = 3;
         
         // アンドゥ・リドゥ
-        private Stack<UIElement> _undoStack = new Stack<UIElement>();
-        private Stack<UIElement> _redoStack = new Stack<UIElement>();
+        private Stack<List<UIElement>> _undoStack = new Stack<List<UIElement>>();
+        private Stack<List<UIElement>> _redoStack = new Stack<List<UIElement>>();
         private int _undoLimit = 50;
+        private List<UIElement> _currentStroke = new List<UIElement>();
 
         public CaptureWindow(BitmapSource image, System.Drawing.Point screenLocation)
         {
@@ -560,6 +561,7 @@ namespace ScreenCapture
 
             _isPainting = true;
             _lastPoint = e.GetPosition(OverlayCanvas);
+            _currentStroke = new List<UIElement>(); // 新しいストロークを開始
             OverlayCanvas.CaptureMouse();
             e.Handled = true;
         }
@@ -586,8 +588,8 @@ namespace ScreenCapture
 
             OverlayCanvas.Children.Add(line);
             
-            // アンドゥスタックに追加
-            AddToUndoStack(line);
+            // 現在のストロークに追加（アンドゥスタックにはまだ追加しない）
+            _currentStroke.Add(line);
             
             _lastPoint = currentPoint;
         }
@@ -599,24 +601,34 @@ namespace ScreenCapture
 
             _isPainting = false;
             OverlayCanvas.ReleaseMouseCapture();
+            
+            // ストローク完了：アンドゥスタックに追加
+            if (_currentStroke.Count > 0)
+            {
+                AddStrokeToUndoStack(_currentStroke);
+                _currentStroke = new List<UIElement>();
+            }
         }
 
-        // アンドゥスタックに追加
-        private void AddToUndoStack(UIElement element)
+        // ストロークをアンドゥスタックに追加
+        private void AddStrokeToUndoStack(List<UIElement> stroke)
         {
-            _undoStack.Push(element);
+            _undoStack.Push(new List<UIElement>(stroke));
             
             // スタックサイズを制限
             if (_undoStack.Count > _undoLimit)
             {
                 var items = _undoStack.ToList();
                 items.Reverse();
-                var oldestItem = items.First();
+                var oldestStroke = items.First();
                 
-                // 最も古い要素をCanvasから削除
-                if (OverlayCanvas.Children.Contains(oldestItem))
+                // 最も古いストロークの全要素をCanvasから削除
+                foreach (var element in oldestStroke)
                 {
-                    OverlayCanvas.Children.Remove(oldestItem);
+                    if (OverlayCanvas.Children.Contains(element))
+                    {
+                        OverlayCanvas.Children.Remove(element);
+                    }
                 }
                 
                 // スタックを再構築
@@ -638,16 +650,19 @@ namespace ScreenCapture
         {
             if (_undoStack.Count == 0) return;
 
-            var element = _undoStack.Pop();
+            var stroke = _undoStack.Pop();
             
-            // Canvasから削除
-            if (OverlayCanvas.Children.Contains(element))
+            // ストロークの全要素をCanvasから削除
+            foreach (var element in stroke)
             {
-                OverlayCanvas.Children.Remove(element);
+                if (OverlayCanvas.Children.Contains(element))
+                {
+                    OverlayCanvas.Children.Remove(element);
+                }
             }
             
             // リドゥスタックに追加
-            _redoStack.Push(element);
+            _redoStack.Push(stroke);
             
             UpdateUndoRedoButtons();
         }
@@ -657,13 +672,16 @@ namespace ScreenCapture
         {
             if (_redoStack.Count == 0) return;
 
-            var element = _redoStack.Pop();
+            var stroke = _redoStack.Pop();
             
-            // Canvasに追加
-            OverlayCanvas.Children.Add(element);
+            // ストロークの全要素をCanvasに追加
+            foreach (var element in stroke)
+            {
+                OverlayCanvas.Children.Add(element);
+            }
             
             // アンドゥスタックに追加
-            _undoStack.Push(element);
+            _undoStack.Push(stroke);
             
             UpdateUndoRedoButtons();
         }
