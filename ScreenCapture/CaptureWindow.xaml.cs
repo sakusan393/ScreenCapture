@@ -58,6 +58,7 @@ namespace ScreenCapture
 
             // Ctrl+Vでクリップボードから画像を貼り付け
             KeyDown += OnKeyDown;
+            PreviewKeyDown += OnKeyDown;
 
             // ウィンドウドラッグ機能（背景をドラッグで移動）
             CaptureImage.MouseLeftButtonDown += (s, e) =>
@@ -228,8 +229,8 @@ namespace ScreenCapture
         // キーダウンイベント処理
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
-            // Ctrlキー単独でペイントモード切り替え
-            if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
+            // Altキー単独でペイントモード切り替え
+            if (IsAltKeyPressed(e))
             {
                 if (!e.IsRepeat) // キーリピートを無視
                 {
@@ -510,6 +511,7 @@ namespace ScreenCapture
                 _undoLimit = limit;
                 TrimUndoStack();
             };
+            _paintToolbarWindow.ToggleRequested += TogglePaintMode;
 
             // Canvasのマウスイベント（ペイント用）
             OverlayCanvas.MouseLeftButtonDown += Canvas_MouseLeftButtonDown;
@@ -528,14 +530,29 @@ namespace ScreenCapture
             {
                 _paintToolbarWindow?.Show();
                 UpdateToolbarPosition();
+                Activate();
+                Focus();
                 OverlayCanvas.Cursor = Cursors.Pen;
             }
             else
             {
                 _paintToolbarWindow?.Hide();
+                Activate();
+                Focus();
                 OverlayCanvas.Cursor = Cursors.Arrow;
                 _isPainting = false;
             }
+        }
+
+        private static bool IsAltKeyPressed(KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
+            {
+                return true;
+            }
+
+            return e.Key == Key.System
+                && (e.SystemKey == Key.LeftAlt || e.SystemKey == Key.RightAlt);
         }
 
         private void UpdateToolbarPosition()

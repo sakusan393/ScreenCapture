@@ -7,6 +7,7 @@
         ShowInTaskbar="False"
         Background="Transparent"
         AllowsTransparency="True"
+        ShowActivated="False"
         SizeToContent="WidthAndHeight"
         MinWidth="600">
     <Border Background="#CC000000" Padding="10">

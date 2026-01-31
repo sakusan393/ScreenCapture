@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace ScreenCapture
@@ -12,12 +13,14 @@ namespace ScreenCapture
         public event Action? UndoRequested;
         public event Action? RedoRequested;
         public event Action<int>? UndoLimitChanged;
+        public event Action? ToggleRequested;
 
         public PaintToolbarWindow()
         {
             InitializeComponent();
 
             MouseLeftButtonDown += (_, __) => DragMove();
+            PreviewKeyDown += OnPreviewKeyDown;
 
             PaintColorWhite.Click += (_, __) => ColorSelected?.Invoke(Colors.White);
             PaintColorBlack.Click += (_, __) => ColorSelected?.Invoke(Colors.Black);
@@ -42,6 +45,26 @@ namespace ScreenCapture
                     UndoLimitChanged?.Invoke(limit);
                 }
             };
+        }
+
+        private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (IsAltKeyPressed(e) && !e.IsRepeat)
+            {
+                ToggleRequested?.Invoke();
+                e.Handled = true;
+            }
+        }
+
+        private static bool IsAltKeyPressed(KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
+            {
+                return true;
+            }
+
+            return e.Key == Key.System
+                && (e.SystemKey == Key.LeftAlt || e.SystemKey == Key.RightAlt);
         }
 
         public void SetUndoRedoEnabled(bool canUndo, bool canRedo)
