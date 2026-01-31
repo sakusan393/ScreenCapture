@@ -11,7 +11,8 @@
                 </TransformGroup>
             </Grid.RenderTransform>
             <Image x:Name="ImageControl"
-                   Stretch="Fill" />
+                   Stretch="Fill"
+                   Panel.ZIndex="0" />
             <Border x:Name="ImageBorder"
                     BorderBrush="White"
                     BorderThickness="15"
@@ -19,12 +20,19 @@
                     IsHitTestVisible="False"
                     Panel.ZIndex="1"/>
 
+            <Thumb x:Name="DragThumb"
+                   Cursor="SizeAll"
+                   Background="Transparent"
+                   Opacity="0"
+                   IsHitTestVisible="True"
+                   Panel.ZIndex="2"/>
+
             <Border x:Name="BoundingBox"
                     BorderBrush="#FF00BFFF"
                     BorderThickness="2"
                     Visibility="Collapsed"
                     IsHitTestVisible="True"
-                    Panel.ZIndex="1">
+                    Panel.ZIndex="3">
                 <Grid>
                     <Thumb x:Name="TopLeftHandle"
                            Width="12" Height="12"
@@ -132,11 +140,5 @@
             </Border>
         </Grid>
 
-        <Thumb x:Name="DragThumb"
-               Cursor="SizeAll"
-               Background="Transparent"
-               Opacity="0"
-               IsHitTestVisible="True"
-               Panel.ZIndex="0"/>
     </Grid>
 </UserControl>
