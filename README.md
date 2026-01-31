@@ -6,22 +6,22 @@
 [![Downloads](https://img.shields.io/github/downloads/sakusan393/ScreenCapture/total)](https://github.com/sakusan393/ScreenCapture/releases)
 [![License](https://img.shields.io/github/license/sakusan393/ScreenCapture)](LICENSE)
 
-## ?? ダウンロード
+## ダウンロード
 
-**[?? 最新版をダウンロード (ScreenCapture.exe)](https://github.com/sakusan393/ScreenCapture/releases/latest)**
+**[最新版をダウンロード (ScreenCapture.exe)](https://github.com/sakusan393/ScreenCapture/releases/latest)**
 
 - **サイズ**: 約155MB
 - **動作環境**: Windows 10/11 (64bit)
 - **インストール不要**: ダブルクリックで即起動
 
-## ? 主な機能
+## 主な機能
 
-### ?? 画面キャプチャ
+### 画面キャプチャ
 - ドラッグで範囲を選択してキャプチャ
 - 複数モニター対応
 - Ctrl+Cでクリップボードにコピー
 
-### ?? テキスト注釈
+### テキスト注釈
 - 右クリックでテキスト追加
 - **カラーピッカー**で文字色を選択
 - **背景色**をカラーピッカーで選択（透明に戻すボタンあり）
@@ -30,7 +30,7 @@
 - ドラッグで移動
 - 色設定は次回起動時も保持
 
-### ??? 画像の貼り付け
+### 画像の貼り付け
 - **Ctrl+V**でクリップボードから画像を追加
 - リサイズ：四隅のハンドルをドラッグ
 - 回転：上部中央のハンドルをドラッグ
@@ -38,7 +38,7 @@
 - 枠線表示のON/OFF（10px/20pxで切り替え）
 - 枠線色をカラーピッカーで変更
 
-### ?? ペイント機能
+### ペイント機能
 - **Alt**キーでペイントモード ON/OFF
 - **カラーピッカー**で色を選択
 - **4段階の太さ**（1, 3, 5, 10）
@@ -48,7 +48,7 @@
 - **履歴回数設定**：10/20/50/100回から選択
 - ペイント設定は次回起動時も保持
 
-### ?? その他
+### その他
 - マウスホバーで枠線表示・×ボタン表示
 - 複数の要素を選択で最前面に移動
 - Escキーで終了
@@ -63,7 +63,7 @@
 
 詳細な使い方は [RELEASE.md](RELEASE.md) をご覧ください。
 
-## ?? ショートカットキー
+## ショートカットキー
 
 | キー | 機能 |
 |------|------|
@@ -105,19 +105,19 @@ dotnet publish -c Release
 # 出力: bin\Release\net8.0-windows\win-x64\publish\ScreenCapture.exe
 ```
 
-## ?? 更新履歴
+## 更新履歴
 
 詳細は [Releases](https://github.com/sakusan393/ScreenCapture/releases) をご覧ください。
 
-## ?? ライセンス
+## ライセンス
 
 このソフトウェアは個人利用・商用利用ともに無料で使用できます。
 
-## ?? バグ報告・機能要望
+## バグ報告・機能要望
 
 [Issues](https://github.com/sakusan393/ScreenCapture/issues) までお願いします。
 
-## ?? 作者
+## 作者
 
 GitHub: [@sakusan393](https://github.com/sakusan393)
 
