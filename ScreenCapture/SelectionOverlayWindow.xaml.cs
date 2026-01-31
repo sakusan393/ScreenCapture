@@ -8,6 +8,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Point = System.Windows.Point;
 using Rect = System.Windows.Rect;
+using WpfMouseEventArgs = System.Windows.Input.MouseEventArgs;
+using WpfClipboard = System.Windows.Clipboard;
+using WpfCursors = System.Windows.Input.Cursors;
 
 namespace ScreenCapture
 {
@@ -26,7 +29,7 @@ namespace ScreenCapture
             Width = SystemParameters.VirtualScreenWidth;
             Height = SystemParameters.VirtualScreenHeight;
 
-            Cursor = Cursors.Cross;
+            Cursor = WpfCursors.Cross;
 
             // Escキーでキャンセル
             KeyDown += (s, e) =>
@@ -46,7 +49,7 @@ namespace ScreenCapture
             UpdateRect(_start, _start);
         }
 
-        private void OnMouseMove(object sender, MouseEventArgs e)
+        private void OnMouseMove(object sender, WpfMouseEventArgs e)
         {
             if (!_dragging) return;
             var pos = e.GetPosition(this);
@@ -86,7 +89,7 @@ namespace ScreenCapture
             var bitmapSource = ToBitmapSource(bmp);
 
             // キャプチャした画像をクリップボードに保存
-            Clipboard.SetImage(bitmapSource);
+            WpfClipboard.SetImage(bitmapSource);
 
             var cap = new CaptureWindow(bitmapSource, screenRect.Location);
             cap.Show();

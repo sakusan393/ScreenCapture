@@ -3,12 +3,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Forms = System.Windows.Forms;
+using MediaColor = System.Windows.Media.Color;
 
 namespace ScreenCapture
 {
     public partial class PaintToolbarWindow : Window
     {
-        public event Action<Color>? ColorSelected;
+        public event Action<MediaColor>? ColorSelected;
         public event Action<double>? ThicknessSelected;
         public event Action? UndoRequested;
         public event Action? RedoRequested;
@@ -19,20 +21,17 @@ namespace ScreenCapture
         {
             InitializeComponent();
 
+            PaintColorPicker.Background = new SolidColorBrush(Colors.Red);
+
             MouseLeftButtonDown += (_, __) => DragMove();
             PreviewKeyDown += OnPreviewKeyDown;
 
-            PaintColorWhite.Click += (_, __) => ColorSelected?.Invoke(Colors.White);
-            PaintColorBlack.Click += (_, __) => ColorSelected?.Invoke(Colors.Black);
-            PaintColorRed.Click += (_, __) => ColorSelected?.Invoke(Colors.Red);
-            PaintColorYellow.Click += (_, __) => ColorSelected?.Invoke(Colors.Yellow);
-            PaintColorGreen.Click += (_, __) => ColorSelected?.Invoke(Colors.Lime);
-            PaintColorBlue.Click += (_, __) => ColorSelected?.Invoke(Colors.Blue);
+            PaintColorPicker.Click += (_, __) => OpenColorDialog();
 
-            PaintThickness1.Click += (_, __) => ThicknessSelected?.Invoke(1);
-            PaintThickness3.Click += (_, __) => ThicknessSelected?.Invoke(3);
-            PaintThickness5.Click += (_, __) => ThicknessSelected?.Invoke(5);
-            PaintThickness10.Click += (_, __) => ThicknessSelected?.Invoke(10);
+            PaintThickness1.Click += (_, __) => SelectThickness(1, PaintThickness1);
+            PaintThickness3.Click += (_, __) => SelectThickness(3, PaintThickness3);
+            PaintThickness5.Click += (_, __) => SelectThickness(5, PaintThickness5);
+            PaintThickness10.Click += (_, __) => SelectThickness(10, PaintThickness10);
 
             UndoButton.Click += (_, __) => UndoRequested?.Invoke();
             RedoButton.Click += (_, __) => RedoRequested?.Invoke();
@@ -45,9 +44,11 @@ namespace ScreenCapture
                     UndoLimitChanged?.Invoke(limit);
                 }
             };
+
+            SelectThickness(3, PaintThickness3);
         }
 
-        private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+        private void OnPreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (IsAltKeyPressed(e) && !e.IsRepeat)
             {
@@ -56,7 +57,7 @@ namespace ScreenCapture
             }
         }
 
-        private static bool IsAltKeyPressed(KeyEventArgs e)
+        private static bool IsAltKeyPressed(System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
             {
@@ -65,6 +66,48 @@ namespace ScreenCapture
 
             return e.Key == Key.System
                 && (e.SystemKey == Key.LeftAlt || e.SystemKey == Key.RightAlt);
+        }
+
+        private void OpenColorDialog()
+        {
+            using var dialog = new Forms.ColorDialog
+            {
+                FullOpen = true
+            };
+
+            if (dialog.ShowDialog() != Forms.DialogResult.OK)
+            {
+                return;
+            }
+
+            var color = MediaColor.FromArgb(
+                dialog.Color.A,
+                dialog.Color.R,
+                dialog.Color.G,
+                dialog.Color.B);
+
+            ColorSelected?.Invoke(color);
+            PaintColorPicker.Background = new SolidColorBrush(color);
+        }
+
+        private void SelectThickness(double thickness, System.Windows.Controls.Button selectedButton)
+        {
+            ThicknessSelected?.Invoke(thickness);
+
+            var buttons = new[]
+            {
+                PaintThickness1,
+                PaintThickness3,
+                PaintThickness5,
+                PaintThickness10
+            };
+
+            foreach (var button in buttons)
+            {
+                var isSelected = button == selectedButton;
+                button.BorderBrush = isSelected ? System.Windows.Media.Brushes.Gold : System.Windows.Media.Brushes.White;
+                button.BorderThickness = isSelected ? new Thickness(3) : new Thickness(2);
+            }
         }
 
         public void SetUndoRedoEnabled(bool canUndo, bool canRedo)

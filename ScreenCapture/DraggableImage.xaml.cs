@@ -8,15 +8,15 @@ using System.Windows.Media.Imaging;
 
 namespace ScreenCapture
 {
-    public partial class DraggableImage : UserControl
+    public partial class DraggableImage : System.Windows.Controls.UserControl
     {
         private bool _isSelected;
-        private Point _rotateStartPoint;
+        private System.Windows.Point _rotateStartPoint;
         private double _rotateStartAngle;
-        private Point _dragStartPosition;
+        private System.Windows.Point _dragStartPosition;
         private double _initialWidth;
         private double _initialHeight;
-        private Point _initialCanvasPosition;
+        private System.Windows.Point _initialCanvasPosition;
 
         // 削除イベント
         public event EventHandler? DeleteRequested;
@@ -107,7 +107,7 @@ namespace ScreenCapture
         private void OnRotateDelta(object sender, DragDeltaEventArgs e)
         {
             var currentPoint = Mouse.GetPosition(this);
-            var center = new Point(ActualWidth / 2, ActualHeight / 2);
+            var center = new System.Windows.Point(ActualWidth / 2, ActualHeight / 2);
 
             // 開始点と現在点の角度を計算
             var startVector = _rotateStartPoint - center;
@@ -132,7 +132,7 @@ namespace ScreenCapture
             var top = Canvas.GetTop(this);
             if (double.IsNaN(left)) left = 0;
             if (double.IsNaN(top)) top = 0;
-            _initialCanvasPosition = new Point(left, top);
+            _initialCanvasPosition = new System.Windows.Point(left, top);
         }
 
         // リサイズ中

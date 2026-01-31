@@ -8,6 +8,13 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Clipboard = System.Windows.Clipboard;
+using Cursors = System.Windows.Input.Cursors;
+using MessageBox = System.Windows.MessageBox;
+using WpfColor = System.Windows.Media.Color;
+using WpfKeyEventArgs = System.Windows.Input.KeyEventArgs;
+using WpfMouseEventArgs = System.Windows.Input.MouseEventArgs;
+using WpfPoint = System.Windows.Point;
 
 namespace ScreenCapture
 {
@@ -16,14 +23,14 @@ namespace ScreenCapture
         private DraggableText? _selectedText;
         private DraggableImage? _selectedImage;
         private bool _isDraggingWindow;
-        private Point _dragStartPoint;
+        private WpfPoint _dragStartPoint;
         private PaintToolbarWindow? _paintToolbarWindow;
 
         // ペイントモード関連
         private bool _isPaintMode;
         private bool _isPainting;
-        private Point _lastPoint;
-        private Color _paintColor = Colors.Red;
+        private WpfPoint _lastPoint;
+        private WpfColor _paintColor = Colors.Red;
         private double _paintThickness = 3;
         private bool _isHorizontalLocked;  // 水平方向にロックされているか
         private bool _isVerticalLocked;    // 垂直方向にロックされているか
@@ -76,7 +83,7 @@ namespace ScreenCapture
             {
                 if (_isDraggingWindow)
                 {
-                    Point current = e.GetPosition(this);
+                    WpfPoint current = e.GetPosition(this);
                     Left += current.X - _dragStartPoint.X;
                     Top += current.Y - _dragStartPoint.Y;
                 }
@@ -147,7 +154,7 @@ namespace ScreenCapture
             {
                 if (_isDraggingWindow && OverlayCanvas.IsMouseCaptured)
                 {
-                    Point current = ev.GetPosition(this);
+                    WpfPoint current = ev.GetPosition(this);
                     Left += current.X - _dragStartPoint.X;
                     Top += current.Y - _dragStartPoint.Y;
                 }
@@ -203,7 +210,7 @@ namespace ScreenCapture
             white.Click += (_, __) =>
             {
                 if (_selectedText == null) return;
-                _selectedText.SetStyle(_selectedText.GetFontSize(), Colors.White);
+                _selectedText.SetStyle(_selectedText.GetFontSize(), System.Windows.Media.Colors.White);
             };
             menu.Items.Add(white);
 
@@ -211,7 +218,7 @@ namespace ScreenCapture
             red.Click += (_, __) =>
             {
                 if (_selectedText == null) return;
-                _selectedText.SetStyle(_selectedText.GetFontSize(), Colors.Red);
+                _selectedText.SetStyle(_selectedText.GetFontSize(), System.Windows.Media.Colors.Red);
             };
             menu.Items.Add(red);
 
@@ -219,7 +226,7 @@ namespace ScreenCapture
             yellow.Click += (_, __) =>
             {
                 if (_selectedText == null) return;
-                _selectedText.SetStyle(_selectedText.GetFontSize(), Colors.Yellow);
+                _selectedText.SetStyle(_selectedText.GetFontSize(), System.Windows.Media.Colors.Yellow);
             };
             menu.Items.Add(yellow);
 
@@ -227,7 +234,7 @@ namespace ScreenCapture
         }
 
         // キーダウンイベント処理
-        private void OnKeyDown(object sender, KeyEventArgs e)
+        private void OnKeyDown(object sender, WpfKeyEventArgs e)
         {
             // Altキー単独でペイントモード切り替え
             if (IsAltKeyPressed(e))
@@ -279,13 +286,13 @@ namespace ScreenCapture
                 var image = Clipboard.GetImage();
                 if (image != null)
                 {
-                    AddImageAt(new Point(50, 50), image);
+                    AddImageAt(new WpfPoint(50, 50), image);
                 }
             }
         }
 
         // 画像をCanvasに追加
-        private void AddImageAt(Point p, BitmapSource image)
+        private void AddImageAt(WpfPoint p, BitmapSource image)
         {
             // まず既存の選択を解除
             DeselectAllImages();
@@ -359,7 +366,7 @@ namespace ScreenCapture
             DeselectAllTexts();
         }
 
-        private void AddTextAt(Point p)
+        private void AddTextAt(WpfPoint p)
         {
             // 他の選択を解除
             DeselectAllImages();
@@ -544,7 +551,7 @@ namespace ScreenCapture
             }
         }
 
-        private static bool IsAltKeyPressed(KeyEventArgs e)
+        private static bool IsAltKeyPressed(WpfKeyEventArgs e)
         {
             if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
             {
@@ -573,7 +580,7 @@ namespace ScreenCapture
         }
 
         // ペイント色の設定
-        private void SetPaintColor(Color color)
+        private void SetPaintColor(WpfColor color)
         {
             _paintColor = color;
         }
@@ -599,7 +606,7 @@ namespace ScreenCapture
         }
 
         // Canvasマウス移動
-        private void Canvas_MouseMove(object sender, MouseEventArgs e)
+        private void Canvas_MouseMove(object sender, WpfMouseEventArgs e)
         {
             if (!_isPaintMode || !_isPainting) return;
 

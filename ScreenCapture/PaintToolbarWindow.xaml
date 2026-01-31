@@ -34,12 +34,10 @@
                       Foreground="White"
                       VerticalAlignment="Center"
                       Margin="5,0,5,0"/>
-            <Button x:Name="PaintColorWhite" Background="White" ToolTip="White"/>
-            <Button x:Name="PaintColorBlack" Background="Black" ToolTip="Black"/>
-            <Button x:Name="PaintColorRed" Background="Red" ToolTip="Red"/>
-            <Button x:Name="PaintColorYellow" Background="Yellow" ToolTip="Yellow"/>
-            <Button x:Name="PaintColorGreen" Background="Lime" ToolTip="Green"/>
-            <Button x:Name="PaintColorBlue" Background="Blue" ToolTip="Blue"/>
+            <Button x:Name="PaintColorPicker"
+                    Content="..."
+                    Background="DarkGray"
+                    ToolTip="More colors"/>
 
             <!-- Thickness -->
             <TextBlock Text="Size:"
@@ -53,17 +51,19 @@
 
             <!-- Undo / Redo -->
             <Button x:Name="UndoButton"
-                    Content="U"
+                    Content="Undo"
                     FontSize="14"
                     Background="DarkGray"
                     ToolTip="Undo (Ctrl+Z)"
-                    Margin="20,5,5,5"/>
+                    Margin="20,5,5,5"
+                    Width="50"/>
             <Button x:Name="RedoButton"
-                    Content="R"
+                    Content="Redo"
                     FontSize="14"
                     Background="DarkGray"
                     ToolTip="Redo (Ctrl+Y)"
-                    Margin="0,5,5,5"/>
+                    Margin="0,5,5,5"
+                    Width="50"/>
 
             <!-- Undo Limit -->
             <TextBlock Text="History:"

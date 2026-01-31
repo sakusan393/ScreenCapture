@@ -4,11 +4,12 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using MediaColor = System.Windows.Media.Color;
 using System.Windows.Threading;
 
 namespace ScreenCapture
 {
-    public partial class DraggableText : UserControl
+    public partial class DraggableText : System.Windows.Controls.UserControl
     {
         private bool _isSelected;
         private bool _isEditing;
@@ -166,7 +167,7 @@ namespace ScreenCapture
 
         public bool IsSelected => _isSelected;
 
-        public void SetStyle(double fontSize, Color color)
+        public void SetStyle(double fontSize, MediaColor color)
         {
             TextBox.FontSize = fontSize;
             TextBox.Foreground = new SolidColorBrush(color);
@@ -175,7 +176,7 @@ namespace ScreenCapture
 
         public double GetFontSize() => TextBox.FontSize;
 
-        public Color GetColor()
+        public MediaColor GetColor()
             => TextBox.Foreground is SolidColorBrush b ? b.Color : Colors.Red;
 
         // 文字サイズ変更の開始（押しっぱなし対応）
