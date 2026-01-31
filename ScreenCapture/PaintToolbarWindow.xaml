@@ -1,0 +1,85 @@
+<Window x:Class="ScreenCapture.PaintToolbarWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Topmost="True"
+        ShowInTaskbar="False"
+        Background="Transparent"
+        AllowsTransparency="True"
+        SizeToContent="WidthAndHeight"
+        MinWidth="600">
+    <Border Background="#CC000000" Padding="10">
+        <StackPanel Orientation="Horizontal">
+            <StackPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Width" Value="30"/>
+                    <Setter Property="Height" Value="30"/>
+                    <Setter Property="Margin" Value="5"/>
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="BorderBrush" Value="White"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </Style>
+            </StackPanel.Resources>
+
+            <TextBlock Text="Paint"
+                      Foreground="White"
+                      VerticalAlignment="Center"
+                      Margin="10,0,10,0"
+                      FontWeight="Bold"/>
+
+            <!-- Color -->
+            <TextBlock Text="Color:"
+                      Foreground="White"
+                      VerticalAlignment="Center"
+                      Margin="5,0,5,0"/>
+            <Button x:Name="PaintColorWhite" Background="White" ToolTip="White"/>
+            <Button x:Name="PaintColorBlack" Background="Black" ToolTip="Black"/>
+            <Button x:Name="PaintColorRed" Background="Red" ToolTip="Red"/>
+            <Button x:Name="PaintColorYellow" Background="Yellow" ToolTip="Yellow"/>
+            <Button x:Name="PaintColorGreen" Background="Lime" ToolTip="Green"/>
+            <Button x:Name="PaintColorBlue" Background="Blue" ToolTip="Blue"/>
+
+            <!-- Thickness -->
+            <TextBlock Text="Size:"
+                      Foreground="White"
+                      VerticalAlignment="Center"
+                      Margin="20,0,5,0"/>
+            <Button x:Name="PaintThickness1" Content="1" Background="Gray" ToolTip="Thin"/>
+            <Button x:Name="PaintThickness3" Content="3" Background="Gray" ToolTip="Normal"/>
+            <Button x:Name="PaintThickness5" Content="5" Background="Gray" ToolTip="Bold"/>
+            <Button x:Name="PaintThickness10" Content="10" Background="Gray" ToolTip="Extra"/>
+
+            <!-- Undo / Redo -->
+            <Button x:Name="UndoButton"
+                    Content="U"
+                    FontSize="14"
+                    Background="DarkGray"
+                    ToolTip="Undo (Ctrl+Z)"
+                    Margin="20,5,5,5"/>
+            <Button x:Name="RedoButton"
+                    Content="R"
+                    FontSize="14"
+                    Background="DarkGray"
+                    ToolTip="Redo (Ctrl+Y)"
+                    Margin="0,5,5,5"/>
+
+            <!-- Undo Limit -->
+            <TextBlock Text="History:"
+                      Foreground="White"
+                      VerticalAlignment="Center"
+                      Margin="20,0,5,0"/>
+            <ComboBox x:Name="UndoLimitComboBox"
+                     Width="60"
+                     Height="25"
+                     Margin="0,0,10,0"
+                     VerticalAlignment="Center"
+                     SelectedIndex="2">
+                <ComboBoxItem Content="10"/>
+                <ComboBoxItem Content="20"/>
+                <ComboBoxItem Content="50"/>
+                <ComboBoxItem Content="100"/>
+            </ComboBox>
+        </StackPanel>
+    </Border>
+</Window>

@@ -7,142 +7,59 @@
         Topmost="True"
         ShowInTaskbar="False"
         Background="Transparent"
-        Loaded="Window_Loaded"
-        SizeToContent="Height">
-    <DockPanel>
-        <!-- ペイントツールバー（Ctrlキーで表示/非表示） - 最下部に固定 -->
-        <StackPanel x:Name="PaintToolbar"
-                   DockPanel.Dock="Bottom"
-                   Orientation="Horizontal"
-                   HorizontalAlignment="Center"
-                   Margin="0,10,0,0"
-                   Visibility="Collapsed"
-                   Background="#CC000000">
-            <StackPanel.Resources>
-                <Style TargetType="Button">
-                    <Setter Property="Width" Value="30"/>
-                    <Setter Property="Height" Value="30"/>
-                    <Setter Property="Margin" Value="5"/>
-                    <Setter Property="Cursor" Value="Hand"/>
-                    <Setter Property="BorderBrush" Value="White"/>
-                    <Setter Property="BorderThickness" Value="2"/>
-                </Style>
-            </StackPanel.Resources>
+        Loaded="Window_Loaded">
+    <Grid>
+        <!-- 背景：キャプチャ画像 -->
+        <Border Background="Black">
+            <Image x:Name="CaptureImage" Stretch="None" Focusable="True"/>
+        </Border>
 
-            <TextBlock Text="ペイントモード"
-                      Foreground="White"
-                      VerticalAlignment="Center"
-                      Margin="10,0,10,0"
-                      FontWeight="Bold"/>
-
-            <!-- 線の色選択 -->
-            <TextBlock Text="色:"
-                      Foreground="White"
-                      VerticalAlignment="Center"
-                      Margin="5,0,5,0"/>
-            <Button x:Name="PaintColorWhite" Background="White" ToolTip="白"/>
-            <Button x:Name="PaintColorBlack" Background="Black" ToolTip="黒"/>
-            <Button x:Name="PaintColorRed" Background="Red" ToolTip="赤"/>
-            <Button x:Name="PaintColorYellow" Background="Yellow" ToolTip="黄"/>
-            <Button x:Name="PaintColorGreen" Background="Lime" ToolTip="緑"/>
-            <Button x:Name="PaintColorBlue" Background="Blue" ToolTip="青"/>
-
-            <!-- 線の太さ選択 -->
-            <TextBlock Text="太さ:"
-                      Foreground="White"
-                      VerticalAlignment="Center"
-                      Margin="20,0,5,0"/>
-            <Button x:Name="PaintThickness1" Content="1" Background="Gray" ToolTip="細い"/>
-            <Button x:Name="PaintThickness3" Content="3" Background="Gray" ToolTip="普通"/>
-            <Button x:Name="PaintThickness5" Content="5" Background="Gray" ToolTip="太い"/>
-            <Button x:Name="PaintThickness10" Content="10" Background="Gray" ToolTip="極太"/>
-
-            <!-- アンドゥ・リドゥ -->
-            <Button x:Name="UndoButton"
-                    Content="↶"
-                    FontSize="18"
-                    Background="DarkGray"
-                    ToolTip="元に戻す (Ctrl+Z)"
-                    Margin="20,5,5,5"/>
-            <Button x:Name="RedoButton"
-                    Content="↷"
-                    FontSize="18"
-                    Background="DarkGray"
-                    ToolTip="やり直す (Ctrl+Y)"
-                    Margin="0,5,5,5"/>
-
-            <!-- アンドゥ回数設定 -->
-            <TextBlock Text="履歴:"
-                      Foreground="White"
-                      VerticalAlignment="Center"
-                      Margin="20,0,5,0"/>
-            <ComboBox x:Name="UndoLimitComboBox"
-                     Width="60"
-                     Height="25"
-                     Margin="0,0,10,0"
-                     VerticalAlignment="Center"
-                     SelectedIndex="2">
-                <ComboBoxItem Content="10"/>
-                <ComboBoxItem Content="20"/>
-                <ComboBoxItem Content="50"/>
-                <ComboBoxItem Content="100"/>
-            </ComboBox>
-        </StackPanel>
-
-        <!-- メインコンテンツエリア -->
-        <Grid>
-            <!-- 背景：キャプチャ画像 -->
-            <Border Background="Black">
-                <Image x:Name="CaptureImage" Stretch="None" Focusable="True"/>
-            </Border>
-
-            <!-- 前景：テキスト等を載せる -->
-            <Canvas x:Name="OverlayCanvas" Background="Transparent" Focusable="True"/>
-            
-            <!-- 枠線：キャプチャエリアを視認できるように半透明の赤い枠 -->
-            <Border x:Name="BorderFrame"
-                    BorderBrush="#40FF0000"
-                    BorderThickness="5"
-                    IsHitTestVisible="False"
-                    Opacity="0.25"/>
-            
-            <!-- 閉じるボタン（マウスホバー時のみ表示） -->
-            <Button x:Name="CloseButton"
-                    Width="30" Height="30"
-                    Content="×"
-                    FontSize="20"
-                    FontWeight="Bold"
-                    Cursor="Hand"
-                    Background="Red"
-                    Foreground="White"
-                    BorderBrush="White"
-                    BorderThickness="2"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    Margin="0,5,5,0"
-                    Visibility="Collapsed"
-                    Opacity="0.5"
-                    Panel.ZIndex="1000"
-                    ToolTip="ウィンドウを閉じる"
-                    Padding="0">
-                <Button.Template>
-                    <ControlTemplate TargetType="Button">
-                        <Grid>
-                            <Border Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}">
-                            </Border>
-                            <TextBlock Text="{TemplateBinding Content}"
-                                       FontSize="{TemplateBinding FontSize}"
-                                       FontWeight="{TemplateBinding FontWeight}"
-                                       Foreground="{TemplateBinding Foreground}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Margin="0,-3,0,0"/>
-                        </Grid>
-                    </ControlTemplate>
-                </Button.Template>
-            </Button>
-        </Grid>
-    </DockPanel>
+        <!-- 前景：テキスト等を載せる -->
+        <Canvas x:Name="OverlayCanvas" Background="Transparent" Focusable="True"/>
+        
+        <!-- 枠線：キャプチャエリアを視認できるように半透明の赤い枠 -->
+        <Border x:Name="BorderFrame"
+                BorderBrush="#40FF0000"
+                BorderThickness="5"
+                IsHitTestVisible="False"
+                Opacity="0.25"/>
+        
+        <!-- 閉じるボタン（マウスホバー時のみ表示） -->
+        <Button x:Name="CloseButton"
+                Width="30" Height="30"
+                Content="×"
+                FontSize="20"
+                FontWeight="Bold"
+                Cursor="Hand"
+                Background="Red"
+                Foreground="White"
+                BorderBrush="White"
+                BorderThickness="2"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="0,5,5,0"
+                Visibility="Collapsed"
+                Opacity="0.5"
+                Panel.ZIndex="1000"
+                ToolTip="ウィンドウを閉じる"
+                Padding="0">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                        </Border>
+                        <TextBlock Text="{TemplateBinding Content}"
+                                   FontSize="{TemplateBinding FontSize}"
+                                   FontWeight="{TemplateBinding FontWeight}"
+                                   Foreground="{TemplateBinding Foreground}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Margin="0,-3,0,0"/>
+                    </Grid>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+    </Grid>
 </Window>

@@ -17,7 +17,8 @@ namespace ScreenCapture
         private DraggableImage? _selectedImage;
         private bool _isDraggingWindow;
         private Point _dragStartPoint;
-        
+        private PaintToolbarWindow? _paintToolbarWindow;
+
         // ペイントモード関連
         private bool _isPaintMode;
         private bool _isPainting;
@@ -26,7 +27,7 @@ namespace ScreenCapture
         private double _paintThickness = 3;
         private bool _isHorizontalLocked;  // 水平方向にロックされているか
         private bool _isVerticalLocked;    // 垂直方向にロックされているか
-        
+
         // アンドゥ・リドゥ
         private Stack<List<UIElement>> _undoStack = new Stack<List<UIElement>>();
         private Stack<List<UIElement>> _redoStack = new Stack<List<UIElement>>();
@@ -41,16 +42,18 @@ namespace ScreenCapture
 
             Left = screenLocation.X;
             Top = screenLocation.Y;
-            
-            // ウィンドウの幅は画像の幅に設定（ツールバーは外側に出る）
+
+            // ウィンドウのサイズはキャプチャ画像のサイズに固定
             Width = image.PixelWidth;
-            // 高さはSizeToContent="Height"で自動調整される
+            Height = image.PixelHeight;
 
             // Escキーでウィンドウを閉じる
             KeyDown += (s, e) =>
             {
                 if (e.Key == Key.Escape)
+                {
                     Close();
+                }
             };
 
             // Ctrl+Vでクリップボードから画像を貼り付け
@@ -61,7 +64,7 @@ namespace ScreenCapture
             {
                 // テキストからフォーカスを外す
                 ClearTextFocus();
-                
+
                 _isDraggingWindow = true;
                 _dragStartPoint = e.GetPosition(this);
                 CaptureImage.CaptureMouse();
@@ -93,7 +96,7 @@ namespace ScreenCapture
                 BorderFrame.Opacity = 0.75;
                 CloseButton.Visibility = Visibility.Visible;
             };
-            
+
             // マウスが出たら枠線の透明度を下げる（25%）と閉じるボタンを非表示
             MouseLeave += (s, e) =>
             {
@@ -105,11 +108,24 @@ namespace ScreenCapture
             CloseButton.Click += (s, e) => Close();
 
             // ペイントツールバーの初期化
-            InitializePaintToolbar();
+            InitializePaintToolbarWindow();
+
+            LocationChanged += (_, __) => UpdateToolbarPosition();
+            SizeChanged += (_, __) => UpdateToolbarPosition();
+            Closed += (_, __) =>
+            {
+                _paintToolbarWindow?.Close();
+                _paintToolbarWindow = null;
+            };
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_paintToolbarWindow != null)
+            {
+                _paintToolbarWindow.Owner = this;
+            }
+
             // Canvas上でもウィンドウドラッグを可能にする（テキストがない場所をドラッグ）
             OverlayCanvas.MouseLeftButtonDown += (s, ev) =>
             {
@@ -118,7 +134,7 @@ namespace ScreenCapture
                 {
                     // テキストからフォーカスを外す
                     ClearTextFocus();
-                    
+
                     _isDraggingWindow = true;
                     _dragStartPoint = ev.GetPosition(this);
                     OverlayCanvas.CaptureMouse();
@@ -245,7 +261,7 @@ namespace ScreenCapture
                 PasteImageFromClipboard();
                 e.Handled = true;
             }
-            
+
             // Ctrl+Cで合成画像をクリップボードにコピー
             if (e.Key == Key.C && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
@@ -282,14 +298,14 @@ namespace ScreenCapture
             {
                 // 他の画像の選択を解除
                 DeselectAllImages();
-                
+
                 // この画像を選択
                 di.Select();
                 _selectedImage = di;
-                
+
                 // 最前面に移動
                 BringToFront(di);
-                
+
                 // イベントは DraggableImage 内で処理されるように伝播させる
             };
 
@@ -304,7 +320,7 @@ namespace ScreenCapture
             };
 
             OverlayCanvas.Children.Add(di);
-            
+
             // 追加直後は選択状態にする
             _selectedImage = di;
             di.Select();
@@ -337,7 +353,7 @@ namespace ScreenCapture
 
             // 画像の選択も解除
             DeselectAllImages();
-            
+
             // テキストの選択も解除
             DeselectAllTexts();
         }
@@ -365,7 +381,7 @@ namespace ScreenCapture
                 DeselectAllTexts();
                 dt.Select();
                 _selectedText = dt;
-                
+
                 // 最前面に移動
                 BringToFront(dt);
             };
@@ -428,14 +444,11 @@ namespace ScreenCapture
                 // 選択を解除してバウンディングボックスを非表示
                 DeselectAllTexts();
                 DeselectAllImages();
-                
+
                 // UI要素を一時的に非表示
-                var wasPaintMode = _isPaintMode;
-                var paintToolbarVisibility = PaintToolbar.Visibility;
                 var borderFrameVisibility = BorderFrame.Visibility;
                 var closeButtonVisibility = CloseButton.Visibility;
-                
-                PaintToolbar.Visibility = Visibility.Collapsed;
+
                 BorderFrame.Visibility = Visibility.Collapsed;
                 CloseButton.Visibility = Visibility.Collapsed;
 
@@ -462,7 +475,6 @@ namespace ScreenCapture
                 Clipboard.SetImage(renderTarget);
 
                 // UI要素を復元
-                PaintToolbar.Visibility = paintToolbarVisibility;
                 BorderFrame.Visibility = borderFrameVisibility;
                 CloseButton.Visibility = closeButtonVisibility;
 
@@ -485,51 +497,25 @@ namespace ScreenCapture
         }
 
         // ペイントツールバーの初期化
-        private void InitializePaintToolbar()
+        private void InitializePaintToolbarWindow()
         {
-            // 色ボタン
-            PaintColorWhite.Click += (_, __) => SetPaintColor(Colors.White);
-            PaintColorBlack.Click += (_, __) => SetPaintColor(Colors.Black);
-            PaintColorRed.Click += (_, __) => SetPaintColor(Colors.Red);
-            PaintColorYellow.Click += (_, __) => SetPaintColor(Colors.Yellow);
-            PaintColorGreen.Click += (_, __) => SetPaintColor(Colors.Lime);
-            PaintColorBlue.Click += (_, __) => SetPaintColor(Colors.Blue);
+            _paintToolbarWindow = new PaintToolbarWindow();
 
-            // 太さボタン
-            PaintThickness1.Click += (_, __) => SetPaintThickness(1);
-            PaintThickness3.Click += (_, __) => SetPaintThickness(3);
-            PaintThickness5.Click += (_, __) => SetPaintThickness(5);
-            PaintThickness10.Click += (_, __) => SetPaintThickness(10);
-
-            // アンドゥ・リドゥボタン
-            UndoButton.Click += (_, __) => Undo();
-            RedoButton.Click += (_, __) => Redo();
-
-            // アンドゥ回数設定
-            UndoLimitComboBox.SelectionChanged += (s, e) =>
+            _paintToolbarWindow.ColorSelected += SetPaintColor;
+            _paintToolbarWindow.ThicknessSelected += SetPaintThickness;
+            _paintToolbarWindow.UndoRequested += Undo;
+            _paintToolbarWindow.RedoRequested += Redo;
+            _paintToolbarWindow.UndoLimitChanged += limit =>
             {
-                if (UndoLimitComboBox.SelectedItem is ComboBoxItem item)
-                {
-                    _undoLimit = int.Parse(item.Content.ToString());
-                    
-                    // 現在のスタックサイズを制限に合わせる
-                    while (_undoStack.Count > _undoLimit)
-                    {
-                        var items = _undoStack.ToList();
-                        _undoStack.Clear();
-                        foreach (var element in items.Take(_undoLimit))
-                        {
-                            _undoStack.Push(element);
-                        }
-                    }
-                }
+                _undoLimit = limit;
+                TrimUndoStack();
             };
 
             // Canvasのマウスイベント（ペイント用）
             OverlayCanvas.MouseLeftButtonDown += Canvas_MouseLeftButtonDown;
             OverlayCanvas.MouseMove += Canvas_MouseMove;
             OverlayCanvas.MouseLeftButtonUp += Canvas_MouseLeftButtonUp;
-            
+
             UpdateUndoRedoButtons();
         }
 
@@ -537,17 +523,36 @@ namespace ScreenCapture
         private void TogglePaintMode()
         {
             _isPaintMode = !_isPaintMode;
-            PaintToolbar.Visibility = _isPaintMode ? Visibility.Visible : Visibility.Collapsed;
-            
+
             if (_isPaintMode)
             {
+                _paintToolbarWindow?.Show();
+                UpdateToolbarPosition();
                 OverlayCanvas.Cursor = Cursors.Pen;
             }
             else
             {
+                _paintToolbarWindow?.Hide();
                 OverlayCanvas.Cursor = Cursors.Arrow;
                 _isPainting = false;
             }
+        }
+
+        private void UpdateToolbarPosition()
+        {
+            if (_paintToolbarWindow == null || !_isPaintMode)
+            {
+                return;
+            }
+
+            _paintToolbarWindow.UpdateLayout();
+
+            var toolbarWidth = _paintToolbarWindow.ActualWidth;
+            var newLeft = Left + (Width - toolbarWidth) / 2;
+            var newTop = Top + Height + 8;
+
+            _paintToolbarWindow.Left = newLeft;
+            _paintToolbarWindow.Top = newTop;
         }
 
         // ペイント色の設定
@@ -582,7 +587,7 @@ namespace ScreenCapture
             if (!_isPaintMode || !_isPainting) return;
 
             var currentPoint = e.GetPosition(OverlayCanvas);
-            
+
             // Shiftキーが押されている場合は水平または垂直の線に補正
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
             {
@@ -591,7 +596,7 @@ namespace ScreenCapture
                 {
                     var deltaX = Math.Abs(currentPoint.X - _lastPoint.X);
                     var deltaY = Math.Abs(currentPoint.Y - _lastPoint.Y);
-                    
+
                     // 一定の距離移動するまで方向を確定しない（誤判定防止）
                     if (deltaX > 5 || deltaY > 5)
                     {
@@ -605,7 +610,7 @@ namespace ScreenCapture
                         }
                     }
                 }
-                
+
                 // ロックされた方向に応じて座標を補正
                 if (_isHorizontalLocked)
                 {
@@ -618,7 +623,7 @@ namespace ScreenCapture
                     currentPoint.X = _lastPoint.X;
                 }
             }
-            
+
             // 線を描画
             var line = new Line
             {
@@ -633,10 +638,10 @@ namespace ScreenCapture
             };
 
             OverlayCanvas.Children.Add(line);
-            
+
             // 現在のストロークに追加（アンドゥスタックにはまだ追加しない）
             _currentStroke.Add(line);
-            
+
             _lastPoint = currentPoint;
         }
 
@@ -647,7 +652,7 @@ namespace ScreenCapture
 
             _isPainting = false;
             OverlayCanvas.ReleaseMouseCapture();
-            
+
             // ストローク完了：アンドゥスタックに追加
             if (_currentStroke.Count > 0)
             {
@@ -660,34 +665,13 @@ namespace ScreenCapture
         private void AddStrokeToUndoStack(List<UIElement> stroke)
         {
             _undoStack.Push(new List<UIElement>(stroke));
-            
+
             // スタックサイズを制限
-            if (_undoStack.Count > _undoLimit)
-            {
-                var items = _undoStack.ToList();
-                items.Reverse();
-                var oldestStroke = items.First();
-                
-                // 最も古いストロークの全要素をCanvasから削除
-                foreach (var element in oldestStroke)
-                {
-                    if (OverlayCanvas.Children.Contains(element))
-                    {
-                        OverlayCanvas.Children.Remove(element);
-                    }
-                }
-                
-                // スタックを再構築
-                _undoStack.Clear();
-                foreach (var item in items.Skip(1).Reverse())
-                {
-                    _undoStack.Push(item);
-                }
-            }
-            
+            TrimUndoStack();
+
             // リドゥスタックをクリア（新しい操作が行われたため）
             _redoStack.Clear();
-            
+
             UpdateUndoRedoButtons();
         }
 
@@ -697,7 +681,7 @@ namespace ScreenCapture
             if (_undoStack.Count == 0) return;
 
             var stroke = _undoStack.Pop();
-            
+
             // ストロークの全要素をCanvasから削除
             foreach (var element in stroke)
             {
@@ -706,10 +690,10 @@ namespace ScreenCapture
                     OverlayCanvas.Children.Remove(element);
                 }
             }
-            
+
             // リドゥスタックに追加
             _redoStack.Push(stroke);
-            
+
             UpdateUndoRedoButtons();
         }
 
@@ -719,32 +703,50 @@ namespace ScreenCapture
             if (_redoStack.Count == 0) return;
 
             var stroke = _redoStack.Pop();
-            
+
             // ストロークの全要素をCanvasに追加
             foreach (var element in stroke)
             {
                 OverlayCanvas.Children.Add(element);
             }
-            
+
             // アンドゥスタックに追加
             _undoStack.Push(stroke);
-            
+
             UpdateUndoRedoButtons();
         }
 
         // アンドゥ・リドゥボタンの有効/無効を更新
         private void UpdateUndoRedoButtons()
         {
-            if (UndoButton != null)
+            _paintToolbarWindow?.SetUndoRedoEnabled(_undoStack.Count > 0, _redoStack.Count > 0);
+        }
+
+        private void TrimUndoStack()
+        {
+            if (_undoStack.Count <= _undoLimit)
             {
-                UndoButton.IsEnabled = _undoStack.Count > 0;
-                UndoButton.Opacity = _undoStack.Count > 0 ? 1.0 : 0.5;
+                return;
             }
-            
-            if (RedoButton != null)
+
+            var items = _undoStack.ToList();
+            items.Reverse();
+            var oldestStroke = items.First();
+
+            // 最も古いストロークの全要素をCanvasから削除
+            foreach (var element in oldestStroke)
             {
-                RedoButton.IsEnabled = _redoStack.Count > 0;
-                RedoButton.Opacity = _redoStack.Count > 0 ? 1.0 : 0.5;
+                if (OverlayCanvas.Children.Contains(element))
+                {
+                    OverlayCanvas.Children.Remove(element);
+                }
+            }
+
+            // スタックを再構築
+            _undoStack.Clear();
+            foreach (var item in items.Skip(1).Reverse())
+            {
+                _undoStack.Push(item);
             }
         }
     }
