@@ -18,6 +18,8 @@ namespace ScreenCapture
         private readonly double[] _borderThicknesses = { 10, 20 };
         private System.Windows.Point _rotateStartPoint;
         private double _rotateStartAngle;
+        private System.Windows.Point _dragStartPoint;
+        private System.Windows.Point _dragStartCanvasPosition;
         private System.Windows.Point _dragStartPosition;
         private double _initialWidth;
         private double _initialHeight;
@@ -37,16 +39,37 @@ namespace ScreenCapture
             UpdateBorderVisibility();
 
             // ドラッグで移動
-            DragThumb.DragDelta += (s, e) =>
+            DragThumb.DragStarted += (_, __) =>
             {
+                var parent = Parent as UIElement;
+                if (parent == null)
+                {
+                    return;
+                }
+
+                _dragStartPoint = Mouse.GetPosition(parent);
+
                 var left = Canvas.GetLeft(this);
                 var top = Canvas.GetTop(this);
 
                 if (double.IsNaN(left)) left = 0;
                 if (double.IsNaN(top)) top = 0;
 
-                Canvas.SetLeft(this, left + e.HorizontalChange);
-                Canvas.SetTop(this, top + e.VerticalChange);
+                _dragStartCanvasPosition = new System.Windows.Point(left, top);
+            };
+            DragThumb.DragDelta += (_, __) =>
+            {
+                var parent = Parent as UIElement;
+                if (parent == null)
+                {
+                    return;
+                }
+
+                var currentPoint = Mouse.GetPosition(parent);
+                var delta = currentPoint - _dragStartPoint;
+
+                Canvas.SetLeft(this, _dragStartCanvasPosition.X + delta.X);
+                Canvas.SetTop(this, _dragStartCanvasPosition.Y + delta.Y);
             };
 
             // クリックで選択状態を切り替え（イベントは伝播させる）
