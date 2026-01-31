@@ -5,12 +5,17 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Forms = System.Windows.Forms;
+using MediaColor = System.Windows.Media.Color;
 
 namespace ScreenCapture
 {
     public partial class DraggableImage : System.Windows.Controls.UserControl
     {
         private bool _isSelected;
+        private MediaColor _borderColor = TextStyleSettings.ImageBorderColor;
+        private int _borderThicknessIndex = -1;
+        private readonly double[] _borderThicknesses = { 10, 20 };
         private System.Windows.Point _rotateStartPoint;
         private double _rotateStartAngle;
         private System.Windows.Point _dragStartPosition;
@@ -28,6 +33,8 @@ namespace ScreenCapture
             ImageControl.Source = image;
             Width = image.PixelWidth;
             Height = image.PixelHeight;
+
+            UpdateBorderVisibility();
 
             // ドラッグで移動
             DragThumb.DragDelta += (s, e) =>
@@ -71,6 +78,20 @@ namespace ScreenCapture
             BottomRightHandle.DragDelta += (s, e) => OnResizeDelta(e, 1, 1);
             BottomRightHandle.MouseDown += (s, e) => e.Handled = true;
 
+            BorderColorButton.Click += (_, e) =>
+            {
+                ChangeBorderColor();
+                e.Handled = true;
+            };
+            BorderColorButton.MouseDown += (s, e) => e.Handled = true;
+
+            BorderToggleButton.Click += (_, e) =>
+            {
+                ToggleBorder();
+                e.Handled = true;
+            };
+            BorderToggleButton.MouseDown += (s, e) => e.Handled = true;
+
             // 削除ボタン
             DeleteButton.Click += (s, e) =>
             {
@@ -78,6 +99,8 @@ namespace ScreenCapture
                 e.Handled = true;
             };
             DeleteButton.MouseDown += (s, e) => e.Handled = true;
+
+            UpdateBorderVisibility();
         }
 
         // 選択状態にする
@@ -95,6 +118,59 @@ namespace ScreenCapture
         }
 
         public bool IsSelected => _isSelected;
+
+        private void ToggleBorder()
+        {
+            if (_borderThicknessIndex < 0)
+            {
+                _borderThicknessIndex = 0;
+            }
+            else if (_borderThicknessIndex == 0)
+            {
+                _borderThicknessIndex = 1;
+            }
+            else
+            {
+                _borderThicknessIndex = -1;
+            }
+            UpdateBorderVisibility();
+        }
+
+        private void ChangeBorderColor()
+        {
+            using var dialog = new Forms.ColorDialog
+            {
+                FullOpen = true,
+                Color = System.Drawing.Color.FromArgb(
+                    _borderColor.A,
+                    _borderColor.R,
+                    _borderColor.G,
+                    _borderColor.B)
+            };
+
+            if (dialog.ShowDialog() != Forms.DialogResult.OK)
+            {
+                return;
+            }
+
+            _borderColor = MediaColor.FromArgb(
+                dialog.Color.A,
+                dialog.Color.R,
+                dialog.Color.G,
+                dialog.Color.B);
+            TextStyleSettings.ImageBorderColor = _borderColor;
+            UpdateBorderVisibility();
+        }
+
+        private void UpdateBorderVisibility()
+        {
+            var isVisible = _borderThicknessIndex >= 0;
+            ImageBorder.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+            ImageBorder.BorderBrush = new SolidColorBrush(_borderColor);
+            ImageBorder.BorderThickness = new Thickness(
+                isVisible ? _borderThicknesses[_borderThicknessIndex] : _borderThicknesses[0]);
+            BorderToggleButton.Opacity = isVisible ? 1.0 : 0.6;
+        }
 
         // 回転開始
         private void OnRotateStarted(object sender, DragStartedEventArgs e)

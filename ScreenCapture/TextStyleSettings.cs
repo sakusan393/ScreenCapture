@@ -24,6 +24,7 @@ namespace ScreenCapture
             public uint BackgroundColorArgb { get; set; } = 0x00000000;
             public uint PaintColorArgb { get; set; } = 0xFFFF0000;
             public double PaintThickness { get; set; } = 3;
+            public uint ImageBorderColorArgb { get; set; } = 0xFFFFFFFF;
         }
 
         private static Data _data = Load();
@@ -64,6 +65,16 @@ namespace ScreenCapture
             set
             {
                 _data.PaintThickness = value;
+                Save();
+            }
+        }
+
+        public static MediaColor ImageBorderColor
+        {
+            get => FromArgb(_data.ImageBorderColorArgb, Colors.White);
+            set
+            {
+                _data.ImageBorderColorArgb = ToArgb(value);
                 Save();
             }
         }
