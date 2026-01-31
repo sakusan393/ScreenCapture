@@ -26,13 +26,13 @@
                             <ControlTemplate TargetType="TextBox">
                                 <Grid>
                                     <Border x:Name="border" 
-                                            Background="Transparent"
+                                            Background="{TemplateBinding Background}"
                                             BorderThickness="0">
                                         <ScrollViewer x:Name="PART_ContentHost"
                                                     Focusable="False"
                                                     HorizontalScrollBarVisibility="Hidden"
                                                     VerticalScrollBarVisibility="Hidden"
-                                                    Background="Transparent"/>
+                                                    Background="{TemplateBinding Background}"/>
                                     </Border>
                                 </Grid>
                             </ControlTemplate>
@@ -126,69 +126,48 @@
                    Margin="0,-28,0,0"
                    Visibility="Collapsed"
                    Panel.ZIndex="10">
-            <Button x:Name="WhiteColorButton"
-                    Width="20" Height="20"
-                    Background="White"
-                    BorderBrush="#FF00BFFF"
-                    BorderThickness="2"
-                    Cursor="Hand"
-                    Margin="0,0,2,0"
-                    ToolTip="白"/>
-            <Button x:Name="BlackColorButton"
-                    Width="20" Height="20"
-                    Background="Black"
-                    BorderBrush="#FF00BFFF"
-                    BorderThickness="2"
-                    Cursor="Hand"
-                    Margin="0,0,2,0"
-                    ToolTip="黒"/>
-            <Button x:Name="RedColorButton"
-                    Width="20" Height="20"
+            <Button x:Name="TextColorPicker"
+                    Width="26" Height="20"
                     Background="Red"
                     BorderBrush="#FF00BFFF"
                     BorderThickness="2"
                     Cursor="Hand"
                     Margin="0,0,2,0"
-                    ToolTip="赤"/>
-            <Button x:Name="YellowColorButton"
-                    Width="20" Height="20"
-                    Background="Yellow"
+                    ToolTip="文字色">
+                <TextBlock Text="T"
+                           FontSize="10"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="White"/>
+            </Button>
+            <Button x:Name="TextBackgroundPicker"
+                    Width="26" Height="20"
+                    Background="Transparent"
                     BorderBrush="#FF00BFFF"
                     BorderThickness="2"
                     Cursor="Hand"
                     Margin="0,0,2,0"
-                    ToolTip="黄"/>
-            <Button x:Name="GreenColorButton"
-                    Width="20" Height="20"
-                    Background="Lime"
+                    ToolTip="背景色">
+                <TextBlock Text="B"
+                           FontSize="10"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="White"/>
+            </Button>
+            <Button x:Name="TextBackgroundClearButton"
+                    Width="26" Height="20"
+                    Content="透明"
+                    FontSize="10"
+                    FontWeight="Bold"
+                    Background="White"
+                    Foreground="Black"
                     BorderBrush="#FF00BFFF"
                     BorderThickness="2"
                     Cursor="Hand"
-                    Margin="0,0,2,0"
-                    ToolTip="緑"/>
-            <Button x:Name="BlueColorButton"
-                    Width="20" Height="20"
-                    Background="Blue"
-                    BorderBrush="#FF00BFFF"
-                    BorderThickness="2"
-                    Cursor="Hand"
-                    Margin="0,0,2,0"
-                    ToolTip="青"/>
-            <Button x:Name="CyanColorButton"
-                    Width="20" Height="20"
-                    Background="Cyan"
-                    BorderBrush="#FF00BFFF"
-                    BorderThickness="2"
-                    Cursor="Hand"
-                    Margin="0,0,2,0"
-                    ToolTip="水色"/>
-            <Button x:Name="MagentaColorButton"
-                    Width="20" Height="20"
-                    Background="Magenta"
-                    BorderBrush="#FF00BFFF"
-                    BorderThickness="2"
-                    Cursor="Hand"
-                    ToolTip="マゼンタ"/>
+                    ToolTip="背景を透明に戻す"
+                    Padding="0,-2,0,0"/>
         </StackPanel>
     </Grid>
 </UserControl>

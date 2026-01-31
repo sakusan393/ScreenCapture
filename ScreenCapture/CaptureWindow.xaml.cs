@@ -192,7 +192,10 @@ namespace ScreenCapture
             bigger.Click += (_, __) =>
             {
                 if (_selectedText == null) return;
-                _selectedText.SetStyle(_selectedText.GetFontSize() + 2, _selectedText.GetColor());
+                _selectedText.SetStyle(
+                    _selectedText.GetFontSize() + 2,
+                    _selectedText.GetColor(),
+                    _selectedText.GetBackgroundColor());
             };
             menu.Items.Add(bigger);
 
@@ -200,7 +203,10 @@ namespace ScreenCapture
             smaller.Click += (_, __) =>
             {
                 if (_selectedText == null) return;
-                _selectedText.SetStyle(Math.Max(8, _selectedText.GetFontSize() - 2), _selectedText.GetColor());
+                _selectedText.SetStyle(
+                    Math.Max(8, _selectedText.GetFontSize() - 2),
+                    _selectedText.GetColor(),
+                    _selectedText.GetBackgroundColor());
             };
             menu.Items.Add(smaller);
 
@@ -210,7 +216,10 @@ namespace ScreenCapture
             white.Click += (_, __) =>
             {
                 if (_selectedText == null) return;
-                _selectedText.SetStyle(_selectedText.GetFontSize(), System.Windows.Media.Colors.White);
+                _selectedText.SetStyle(
+                    _selectedText.GetFontSize(),
+                    System.Windows.Media.Colors.White,
+                    _selectedText.GetBackgroundColor());
             };
             menu.Items.Add(white);
 
@@ -218,7 +227,10 @@ namespace ScreenCapture
             red.Click += (_, __) =>
             {
                 if (_selectedText == null) return;
-                _selectedText.SetStyle(_selectedText.GetFontSize(), System.Windows.Media.Colors.Red);
+                _selectedText.SetStyle(
+                    _selectedText.GetFontSize(),
+                    System.Windows.Media.Colors.Red,
+                    _selectedText.GetBackgroundColor());
             };
             menu.Items.Add(red);
 
@@ -226,7 +238,10 @@ namespace ScreenCapture
             yellow.Click += (_, __) =>
             {
                 if (_selectedText == null) return;
-                _selectedText.SetStyle(_selectedText.GetFontSize(), System.Windows.Media.Colors.Yellow);
+                _selectedText.SetStyle(
+                    _selectedText.GetFontSize(),
+                    System.Windows.Media.Colors.Yellow,
+                    _selectedText.GetBackgroundColor());
             };
             menu.Items.Add(yellow);
 
@@ -379,7 +394,10 @@ namespace ScreenCapture
             // 選択中のテキストのスタイルを引き継ぐ（色変更後に追加した場合）
             if (_selectedText != null)
             {
-                dt.SetStyle(_selectedText.GetFontSize(), _selectedText.GetColor());
+                dt.SetStyle(
+                    _selectedText.GetFontSize(),
+                    _selectedText.GetColor(),
+                    _selectedText.GetBackgroundColor());
             }
 
             // クリックで選択状態にする
@@ -520,6 +538,8 @@ namespace ScreenCapture
             };
             _paintToolbarWindow.ToggleRequested += TogglePaintMode;
 
+            _paintToolbarWindow.ApplySettings(TextStyleSettings.PaintColor, TextStyleSettings.PaintThickness);
+
             // Canvasのマウスイベント（ペイント用）
             OverlayCanvas.MouseLeftButtonDown += Canvas_MouseLeftButtonDown;
             OverlayCanvas.MouseMove += Canvas_MouseMove;
@@ -583,12 +603,14 @@ namespace ScreenCapture
         private void SetPaintColor(WpfColor color)
         {
             _paintColor = color;
+            TextStyleSettings.PaintColor = color;
         }
 
         // ペイント太さの設定
         private void SetPaintThickness(double thickness)
         {
             _paintThickness = thickness;
+            TextStyleSettings.PaintThickness = thickness;
         }
 
         // Canvasマウスダウン

@@ -4,8 +4,9 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using MediaColor = System.Windows.Media.Color;
 using System.Windows.Threading;
+using Forms = System.Windows.Forms;
+using MediaColor = System.Windows.Media.Color;
 
 namespace ScreenCapture
 {
@@ -26,9 +27,11 @@ namespace ScreenCapture
         {
             InitializeComponent();
 
-            // デバッグ: 背景を強制的に透明に設定
-            TextBox.Background = System.Windows.Media.Brushes.Transparent;
             TextBox.BorderBrush = System.Windows.Media.Brushes.Transparent;
+
+            var textColor = TextStyleSettings.TextColor;
+            var backgroundColor = TextStyleSettings.BackgroundColor;
+            SetStyle(TextBox.FontSize, textColor, backgroundColor);
             
             // 編集中はドラッグ無効（入力を優先）
             TextBox.GotFocus += (_, __) =>
@@ -80,29 +83,14 @@ namespace ScreenCapture
             };
 
             // 色変更ボタン
-            WhiteColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.White);
-            WhiteColorButton.MouseDown += (s, e) => e.Handled = true;
+            TextColorPicker.Click += (_, __) => ChangeTextColor();
+            TextColorPicker.MouseDown += (s, e) => e.Handled = true;
 
-            BlackColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Black);
-            BlackColorButton.MouseDown += (s, e) => e.Handled = true;
+            TextBackgroundPicker.Click += (_, __) => ChangeBackgroundColor();
+            TextBackgroundPicker.MouseDown += (s, e) => e.Handled = true;
 
-            RedColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Red);
-            RedColorButton.MouseDown += (s, e) => e.Handled = true;
-
-            YellowColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Yellow);
-            YellowColorButton.MouseDown += (s, e) => e.Handled = true;
-
-            GreenColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Lime);
-            GreenColorButton.MouseDown += (s, e) => e.Handled = true;
-
-            BlueColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Blue);
-            BlueColorButton.MouseDown += (s, e) => e.Handled = true;
-
-            CyanColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Cyan);
-            CyanColorButton.MouseDown += (s, e) => e.Handled = true;
-
-            MagentaColorButton.Click += (_, __) => SetStyle(GetFontSize(), Colors.Magenta);
-            MagentaColorButton.MouseDown += (s, e) => e.Handled = true;
+            TextBackgroundClearButton.Click += (_, __) => ResetBackgroundColor();
+            TextBackgroundClearButton.MouseDown += (s, e) => e.Handled = true;
 
             // 文字サイズ変更ボタン（押しっぱなし対応）
             FontSizeUpButton.PreviewMouseLeftButtonDown += (_, __) => StartFontSizeChange(1);
@@ -167,17 +155,76 @@ namespace ScreenCapture
 
         public bool IsSelected => _isSelected;
 
-        public void SetStyle(double fontSize, MediaColor color)
+        public void SetStyle(double fontSize, MediaColor color, MediaColor backgroundColor)
         {
             TextBox.FontSize = fontSize;
             TextBox.Foreground = new SolidColorBrush(color);
             TextBox.CaretBrush = new SolidColorBrush(color);
+            TextBox.Background = new SolidColorBrush(backgroundColor);
+            TextColorPicker.Background = new SolidColorBrush(color);
+            TextBackgroundPicker.Background = new SolidColorBrush(backgroundColor);
+            TextStyleSettings.TextColor = color;
+            TextStyleSettings.BackgroundColor = backgroundColor;
         }
 
         public double GetFontSize() => TextBox.FontSize;
 
         public MediaColor GetColor()
             => TextBox.Foreground is SolidColorBrush b ? b.Color : Colors.Red;
+
+        public MediaColor GetBackgroundColor()
+            => TextBox.Background is SolidColorBrush b ? b.Color : Colors.Transparent;
+
+        private void ChangeTextColor()
+        {
+            if (!TryPickColor(GetColor(), out var color))
+            {
+                return;
+            }
+
+            SetStyle(GetFontSize(), color, GetBackgroundColor());
+        }
+
+        private void ChangeBackgroundColor()
+        {
+            if (!TryPickColor(GetBackgroundColor(), out var color))
+            {
+                return;
+            }
+
+            SetStyle(GetFontSize(), GetColor(), color);
+        }
+
+        private void ResetBackgroundColor()
+        {
+            SetStyle(GetFontSize(), GetColor(), Colors.Transparent);
+        }
+
+        private static bool TryPickColor(MediaColor initialColor, out MediaColor selectedColor)
+        {
+            using var dialog = new Forms.ColorDialog
+            {
+                FullOpen = true,
+                Color = System.Drawing.Color.FromArgb(
+                    initialColor.A,
+                    initialColor.R,
+                    initialColor.G,
+                    initialColor.B)
+            };
+
+            if (dialog.ShowDialog() != Forms.DialogResult.OK)
+            {
+                selectedColor = default;
+                return false;
+            }
+
+            selectedColor = MediaColor.FromArgb(
+                dialog.Color.A,
+                dialog.Color.R,
+                dialog.Color.G,
+                dialog.Color.B);
+            return true;
+        }
 
         // 文字サイズ変更の開始（押しっぱなし対応）
         private void StartFontSizeChange(int direction)
@@ -211,7 +258,7 @@ namespace ScreenCapture
         {
             var newSize = GetFontSize() + (_fontSizeDirection * 2);
             newSize = Math.Max(8, Math.Min(200, newSize)); // 8～200の範囲
-            SetStyle(newSize, GetColor());
+            SetStyle(newSize, GetColor(), GetBackgroundColor());
         }
     }
 }

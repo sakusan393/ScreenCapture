@@ -21,7 +21,7 @@ namespace ScreenCapture
         {
             InitializeComponent();
 
-            PaintColorPicker.Background = new SolidColorBrush(Colors.Red);
+            PaintColorPicker.Background = new SolidColorBrush(TextStyleSettings.PaintColor);
 
             MouseLeftButtonDown += (_, __) => DragMove();
             PreviewKeyDown += OnPreviewKeyDown;
@@ -45,7 +45,7 @@ namespace ScreenCapture
                 }
             };
 
-            SelectThickness(3, PaintThickness3);
+            SelectThicknessFromSettings(TextStyleSettings.PaintThickness);
         }
 
         private void OnPreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -88,6 +88,27 @@ namespace ScreenCapture
 
             ColorSelected?.Invoke(color);
             PaintColorPicker.Background = new SolidColorBrush(color);
+        }
+
+        public void ApplySettings(MediaColor color, double thickness)
+        {
+            PaintColorPicker.Background = new SolidColorBrush(color);
+            ColorSelected?.Invoke(color);
+            SelectThicknessFromSettings(thickness);
+        }
+
+        private void SelectThicknessFromSettings(double thickness)
+        {
+            var selected = thickness switch
+            {
+                1 => (1, PaintThickness1),
+                3 => (3, PaintThickness3),
+                5 => (5, PaintThickness5),
+                10 => (10, PaintThickness10),
+                _ => (3, PaintThickness3)
+            };
+
+            SelectThickness(selected.Item1, selected.Item2);
         }
 
         private void SelectThickness(double thickness, System.Windows.Controls.Button selectedButton)
