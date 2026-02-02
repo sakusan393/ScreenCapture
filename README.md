@@ -6,14 +6,6 @@
 [![Downloads](https://img.shields.io/github/downloads/sakusan393/ScreenCapture/total)](https://github.com/sakusan393/ScreenCapture/releases)
 [![License](https://img.shields.io/github/license/sakusan393/ScreenCapture)](LICENSE)
 
-## ダウンロード
-
-**[最新版をダウンロード (ScreenCapture.exe)](https://github.com/sakusan393/ScreenCapture/releases/latest)**
-
-- **サイズ**: 約155MB
-- **動作環境**: Windows 10/11 (64bit)
-- **インストール不要**: ダブルクリックで即起動
-
 ## 主な機能
 
 ### 画面キャプチャ
