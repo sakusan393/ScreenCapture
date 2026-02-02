@@ -15,6 +15,7 @@ using WpfColor = System.Windows.Media.Color;
 using WpfKeyEventArgs = System.Windows.Input.KeyEventArgs;
 using WpfMouseEventArgs = System.Windows.Input.MouseEventArgs;
 using WpfPoint = System.Windows.Point;
+using Forms = System.Windows.Forms;
 
 namespace ScreenCapture
 {
@@ -46,6 +47,8 @@ namespace ScreenCapture
             InitializeComponent();
 
             CaptureImage.Source = image;
+
+            BorderFrame.BorderBrush = new SolidColorBrush(TextStyleSettings.CaptureFrameColor);
 
             Left = screenLocation.X;
             Top = screenLocation.Y;
@@ -101,19 +104,24 @@ namespace ScreenCapture
             // マウスが入ったら枠線の透明度を上げる（75%）と閉じるボタンを表示
             MouseEnter += (s, e) =>
             {
-                BorderFrame.Opacity = 0.75;
+                BorderFrame.Opacity = 1;
                 CloseButton.Visibility = Visibility.Visible;
+                MinimizeButton.Visibility = Visibility.Visible;
             };
 
             // マウスが出たら枠線の透明度を下げる（25%）と閉じるボタンを非表示
             MouseLeave += (s, e) =>
             {
-                BorderFrame.Opacity = 0.25;
+                BorderFrame.Opacity = 0.5;
                 CloseButton.Visibility = Visibility.Collapsed;
+                MinimizeButton.Visibility = Visibility.Collapsed;
             };
 
             // 閉じるボタンのクリックイベント
             CloseButton.Click += (s, e) => Close();
+
+            // 最小化ボタンのクリックイベント
+            MinimizeButton.Click += (s, e) => WindowState = WindowState.Minimized;
 
             // ペイントツールバーの初期化
             InitializePaintToolbarWindow();
@@ -182,68 +190,13 @@ namespace ScreenCapture
             pasteImage.Click += (_, __) => PasteImageFromClipboard();
             menu.Items.Add(pasteImage);
 
+            var frameColor = new MenuItem { Header = "枠線の色を変更" };
+            frameColor.Click += (_, __) => ChangeFrameColor();
+            menu.Items.Add(frameColor);
+
             var copyComposite = new MenuItem { Header = "全体をコピー (Ctrl+C)" };
             copyComposite.Click += (_, __) => CopyCompositeToClipboard();
             menu.Items.Add(copyComposite);
-
-            menu.Items.Add(new Separator());
-
-            var bigger = new MenuItem { Header = "文字を大きく (+2)" };
-            bigger.Click += (_, __) =>
-            {
-                if (_selectedText == null) return;
-                _selectedText.SetStyle(
-                    _selectedText.GetFontSize() + 2,
-                    _selectedText.GetColor(),
-                    _selectedText.GetBackgroundColor());
-            };
-            menu.Items.Add(bigger);
-
-            var smaller = new MenuItem { Header = "文字を小さく (-2)" };
-            smaller.Click += (_, __) =>
-            {
-                if (_selectedText == null) return;
-                _selectedText.SetStyle(
-                    Math.Max(8, _selectedText.GetFontSize() - 2),
-                    _selectedText.GetColor(),
-                    _selectedText.GetBackgroundColor());
-            };
-            menu.Items.Add(smaller);
-
-            menu.Items.Add(new Separator());
-
-            var white = new MenuItem { Header = "色: 白" };
-            white.Click += (_, __) =>
-            {
-                if (_selectedText == null) return;
-                _selectedText.SetStyle(
-                    _selectedText.GetFontSize(),
-                    System.Windows.Media.Colors.White,
-                    _selectedText.GetBackgroundColor());
-            };
-            menu.Items.Add(white);
-
-            var red = new MenuItem { Header = "色: 赤" };
-            red.Click += (_, __) =>
-            {
-                if (_selectedText == null) return;
-                _selectedText.SetStyle(
-                    _selectedText.GetFontSize(),
-                    System.Windows.Media.Colors.Red,
-                    _selectedText.GetBackgroundColor());
-            };
-            menu.Items.Add(red);
-
-            var yellow = new MenuItem { Header = "色: 黄" };
-            yellow.Click += (_, __) =>
-            {
-                if (_selectedText == null) return;
-                _selectedText.SetStyle(
-                    _selectedText.GetFontSize(),
-                    System.Windows.Media.Colors.Yellow,
-                    _selectedText.GetBackgroundColor());
-            };
-            menu.Items.Add(yellow);
 
             OverlayCanvas.ContextMenu = menu;
         }
@@ -474,9 +427,11 @@ namespace ScreenCapture
                 // UI要素を一時的に非表示
                 var borderFrameVisibility = BorderFrame.Visibility;
                 var closeButtonVisibility = CloseButton.Visibility;
+                var minimizeButtonVisibility = MinimizeButton.Visibility;
 
                 BorderFrame.Visibility = Visibility.Collapsed;
                 CloseButton.Visibility = Visibility.Collapsed;
+                MinimizeButton.Visibility = Visibility.Collapsed;
 
                 // UIの更新を待つ
                 Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
@@ -503,6 +458,7 @@ namespace ScreenCapture
                 // UI要素を復元
                 BorderFrame.Visibility = borderFrameVisibility;
                 CloseButton.Visibility = closeButtonVisibility;
+                MinimizeButton.Visibility = minimizeButtonVisibility;
 
                 // 選択状態を復元
                 if (wasTextSelected && selectedText != null)
@@ -794,6 +750,34 @@ namespace ScreenCapture
             {
                 _undoStack.Push(item);
             }
+        }
+
+        private void ChangeFrameColor()
+        {
+            var currentColor = BorderFrame.BorderBrush is SolidColorBrush b ? b.Color : Colors.Red;
+            using var dialog = new Forms.ColorDialog
+            {
+                FullOpen = true,
+                Color = System.Drawing.Color.FromArgb(
+                    currentColor.A,
+                    currentColor.R,
+                    currentColor.G,
+                    currentColor.B)
+            };
+
+            if (dialog.ShowDialog() != Forms.DialogResult.OK)
+            {
+                return;
+            }
+
+            var color = WpfColor.FromArgb(
+                dialog.Color.A,
+                dialog.Color.R,
+                dialog.Color.G,
+                dialog.Color.B);
+
+            BorderFrame.BorderBrush = new SolidColorBrush(color);
+            TextStyleSettings.CaptureFrameColor = color;
         }
     }
 }
