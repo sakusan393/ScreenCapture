@@ -26,11 +26,13 @@ namespace ScreenCapture
         private bool _isDraggingWindow;
         private WpfPoint _dragStartPoint;
         private PaintToolbarWindow? _paintToolbarWindow;
+        private Grid? _contentLayer;
 
         // ペイントモード関連
         private bool _isPaintMode;
         private bool _isPainting;
         private WpfPoint _lastPoint;
+        private WpfPoint _strokeStartPoint;
         private WpfColor _paintColor = Colors.Red;
         private double _paintThickness = 3;
         private bool _isHorizontalLocked;  // 水平方向にロックされているか
@@ -46,9 +48,13 @@ namespace ScreenCapture
         {
             InitializeComponent();
 
+            _contentLayer = FindName("ContentLayer") as Grid;
+
             CaptureImage.Source = image;
 
             BorderFrame.BorderBrush = new SolidColorBrush(TextStyleSettings.CaptureFrameColor);
+
+            MouseWheel += OnWindowMouseWheel;
 
             Left = screenLocation.X;
             Top = screenLocation.Y;
@@ -189,6 +195,10 @@ namespace ScreenCapture
             var pasteImage = new MenuItem { Header = "画像を貼り付け (Ctrl+V)" };
             pasteImage.Click += (_, __) => PasteImageFromClipboard();
             menu.Items.Add(pasteImage);
+
+            var paintToggle = new MenuItem { Header = "ペイントモード切り替え (Alt)" };
+            paintToggle.Click += (_, __) => TogglePaintMode();
+            menu.Items.Add(paintToggle);
 
             var frameColor = new MenuItem { Header = "枠線の色を変更" };
             frameColor.Click += (_, __) => ChangeFrameColor();
@@ -576,6 +586,7 @@ namespace ScreenCapture
 
             _isPainting = true;
             _lastPoint = e.GetPosition(OverlayCanvas);
+            _strokeStartPoint = _lastPoint;
             _currentStroke = new List<UIElement>(); // 新しいストロークを開始
             _isHorizontalLocked = false;  // ロックをリセット
             _isVerticalLocked = false;    // ロックをリセット
@@ -593,23 +604,19 @@ namespace ScreenCapture
             // Shiftキーが押されている場合は水平または垂直の線に補正
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
             {
-                // 最初の移動で方向を決定してロック
+                // 最初の移動で即座に方向を確定
                 if (!_isHorizontalLocked && !_isVerticalLocked)
                 {
-                    var deltaX = Math.Abs(currentPoint.X - _lastPoint.X);
-                    var deltaY = Math.Abs(currentPoint.Y - _lastPoint.Y);
+                    var deltaX = Math.Abs(currentPoint.X - _strokeStartPoint.X);
+                    var deltaY = Math.Abs(currentPoint.Y - _strokeStartPoint.Y);
 
-                    // 一定の距離移動するまで方向を確定しない（誤判定防止）
-                    if (deltaX > 5 || deltaY > 5)
+                    if (deltaX >= deltaY)
                     {
-                        if (deltaX > deltaY)
-                        {
-                            _isHorizontalLocked = true;  // 水平方向にロック
-                        }
-                        else
-                        {
-                            _isVerticalLocked = true;    // 垂直方向にロック
-                        }
+                        _isHorizontalLocked = true;  // 水平方向にロック
+                    }
+                    else
+                    {
+                        _isVerticalLocked = true;    // 垂直方向にロック
                     }
                 }
 
@@ -778,6 +785,21 @@ namespace ScreenCapture
 
             BorderFrame.BorderBrush = new SolidColorBrush(color);
             TextStyleSettings.CaptureFrameColor = color;
+        }
+
+        private void OnWindowMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            const double step = 0.05;
+            const double minOpacity = 0.2;
+            const double maxOpacity = 1.0;
+
+            if (_contentLayer == null)
+            {
+                return;
+            }
+
+            var delta = e.Delta > 0 ? step : -step;
+            _contentLayer.Opacity = Math.Clamp(_contentLayer.Opacity + delta, minOpacity, maxOpacity);
         }
     }
 }
