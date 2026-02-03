@@ -21,6 +21,16 @@
                     <Setter Property="BorderBrush" Value="White"/>
                     <Setter Property="BorderThickness" Value="2"/>
                 </Style>
+                <Style TargetType="ToggleButton">
+                    <Setter Property="Width" Value="60"/>
+                    <Setter Property="Height" Value="30"/>
+                    <Setter Property="Margin" Value="5"/>
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="BorderBrush" Value="White"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="Background" Value="Gray"/>
+                    <Setter Property="FontSize" Value="12"/>
+                </Style>
             </StackPanel.Resources>
 
             <TextBlock Text="Paint"
@@ -38,6 +48,10 @@
                     Content="..."
                     Background="DarkGray"
                     ToolTip="More colors"/>
+
+            <ToggleButton x:Name="ArrowModeToggle"
+                          Content="Arrow"
+                          ToolTip="Arrow mode (Ctrl)"/>
 
             <!-- Thickness -->
             <TextBlock Text="Size:"

@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using Forms = System.Windows.Forms;
@@ -16,6 +17,10 @@ namespace ScreenCapture
         public event Action? RedoRequested;
         public event Action<int>? UndoLimitChanged;
         public event Action? ToggleRequested;
+        public event Action<bool>? ArrowModeToggled;
+
+        private bool _isUpdatingArrowToggle;
+        private ToggleButton? _arrowModeToggle;
 
         public PaintToolbarWindow()
         {
@@ -23,10 +28,18 @@ namespace ScreenCapture
 
             PaintColorPicker.Background = new SolidColorBrush(TextStyleSettings.PaintColor);
 
+            _arrowModeToggle = FindName("ArrowModeToggle") as ToggleButton;
+
             MouseLeftButtonDown += (_, __) => DragMove();
             PreviewKeyDown += OnPreviewKeyDown;
 
             PaintColorPicker.Click += (_, __) => OpenColorDialog();
+
+            if (_arrowModeToggle != null)
+            {
+                _arrowModeToggle.Checked += (_, __) => OnArrowModeToggled(true);
+                _arrowModeToggle.Unchecked += (_, __) => OnArrowModeToggled(false);
+            }
 
             PaintThickness1.Click += (_, __) => SelectThickness(1, PaintThickness1);
             PaintThickness3.Click += (_, __) => SelectThickness(3, PaintThickness3);
@@ -129,6 +142,41 @@ namespace ScreenCapture
                 button.BorderBrush = isSelected ? System.Windows.Media.Brushes.Gold : System.Windows.Media.Brushes.White;
                 button.BorderThickness = isSelected ? new Thickness(3) : new Thickness(2);
             }
+        }
+
+        private void OnArrowModeToggled(bool isEnabled)
+        {
+            if (_isUpdatingArrowToggle)
+            {
+                return;
+            }
+
+            UpdateArrowModeVisuals(isEnabled);
+            ArrowModeToggled?.Invoke(isEnabled);
+        }
+
+        private void UpdateArrowModeVisuals(bool isEnabled)
+        {
+            if (_arrowModeToggle == null)
+            {
+                return;
+            }
+
+            _arrowModeToggle.BorderBrush = isEnabled ? System.Windows.Media.Brushes.Gold : System.Windows.Media.Brushes.White;
+            _arrowModeToggle.BorderThickness = isEnabled ? new Thickness(3) : new Thickness(2);
+        }
+
+        public void SetArrowMode(bool isEnabled)
+        {
+            if (_arrowModeToggle == null)
+            {
+                return;
+            }
+
+            _isUpdatingArrowToggle = true;
+            _arrowModeToggle.IsChecked = isEnabled;
+            UpdateArrowModeVisuals(isEnabled);
+            _isUpdatingArrowToggle = false;
         }
 
         public void SetUndoRedoEnabled(bool canUndo, bool canRedo)
