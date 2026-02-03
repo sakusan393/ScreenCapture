@@ -869,7 +869,7 @@ namespace ScreenCapture
         private void OnWindowMouseWheel(object sender, MouseWheelEventArgs e)
         {
             const double step = 0.05;
-            const double minOpacity = 0.0;
+            const double minOpacity = 0.05;
             const double maxOpacity = 1.0;
 
             if (_contentLayer == null)
