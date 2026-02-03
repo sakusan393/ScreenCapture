@@ -4,7 +4,6 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using Forms = System.Windows.Forms;
 using MediaColor = System.Windows.Media.Color;
 
 namespace ScreenCapture
@@ -26,14 +25,13 @@ namespace ScreenCapture
         {
             InitializeComponent();
 
-            PaintColorPicker.Background = new SolidColorBrush(TextStyleSettings.PaintColor);
+            PaintColorPicker.SelectedColor = TextStyleSettings.PaintColor;
+            PaintColorPicker.SelectedColorChanged += OnSelectedColorChanged;
 
             _arrowModeToggle = FindName("ArrowModeToggle") as ToggleButton;
 
             MouseLeftButtonDown += (_, __) => DragMove();
             PreviewKeyDown += OnPreviewKeyDown;
-
-            PaintColorPicker.Click += (_, __) => OpenColorDialog();
 
             if (_arrowModeToggle != null)
             {
@@ -81,31 +79,19 @@ namespace ScreenCapture
                 && (e.SystemKey == Key.LeftAlt || e.SystemKey == Key.RightAlt);
         }
 
-        private void OpenColorDialog()
+        private void OnSelectedColorChanged(object? sender, RoutedPropertyChangedEventArgs<MediaColor?> e)
         {
-            using var dialog = new Forms.ColorDialog
-            {
-                FullOpen = true
-            };
-
-            if (dialog.ShowDialog() != Forms.DialogResult.OK)
+            if (e.NewValue == null)
             {
                 return;
             }
 
-            var color = MediaColor.FromArgb(
-                dialog.Color.A,
-                dialog.Color.R,
-                dialog.Color.G,
-                dialog.Color.B);
-
-            ColorSelected?.Invoke(color);
-            PaintColorPicker.Background = new SolidColorBrush(color);
+            ColorSelected?.Invoke(e.NewValue.Value);
         }
 
         public void ApplySettings(MediaColor color, double thickness)
         {
-            PaintColorPicker.Background = new SolidColorBrush(color);
+            PaintColorPicker.SelectedColor = color;
             ColorSelected?.Invoke(color);
             SelectThicknessFromSettings(thickness);
         }
