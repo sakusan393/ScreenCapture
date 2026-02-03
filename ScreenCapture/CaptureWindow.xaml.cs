@@ -15,7 +15,7 @@ using WpfColor = System.Windows.Media.Color;
 using WpfKeyEventArgs = System.Windows.Input.KeyEventArgs;
 using WpfMouseEventArgs = System.Windows.Input.MouseEventArgs;
 using WpfPoint = System.Windows.Point;
-using Forms = System.Windows.Forms;
+using Xceed.Wpf.Toolkit;
 
 namespace ScreenCapture
 {
@@ -27,6 +27,7 @@ namespace ScreenCapture
         private WpfPoint _dragStartPoint;
         private PaintToolbarWindow? _paintToolbarWindow;
         private Grid? _contentLayer;
+        private ColorPicker? _frameColorPicker;
 
         // ペイントモード関連
         private bool _isPaintMode;
@@ -56,12 +57,18 @@ namespace ScreenCapture
             InitializeComponent();
 
             _contentLayer = FindName("ContentLayer") as Grid;
+            _frameColorPicker = FindName("FrameColorPicker") as ColorPicker;
 
             CaptureImage.Source = image;
 
             var frameColor = TextStyleSettings.CaptureFrameColor;
             BorderFrame.BorderBrush = new SolidColorBrush(frameColor);
-            FrameColorButton.Background = new SolidColorBrush(frameColor);
+
+            if (_frameColorPicker != null)
+            {
+                _frameColorPicker.SelectedColor = frameColor;
+                _frameColorPicker.SelectedColorChanged += OnFrameColorChanged;
+            }
 
             MouseWheel += OnWindowMouseWheel;
             KeyUp += OnKeyUp;
@@ -123,7 +130,10 @@ namespace ScreenCapture
                 BorderFrame.Opacity = 1;
                 CloseButton.Visibility = Visibility.Visible;
                 MinimizeButton.Visibility = Visibility.Visible;
-                FrameColorButton.Visibility = Visibility.Visible;
+                if (_frameColorPicker != null)
+                {
+                    _frameColorPicker.Visibility = Visibility.Visible;
+                }
             };
 
             // マウスが出たら枠線の透明度を下げる（25%）と閉じるボタンを非表示
@@ -132,17 +142,17 @@ namespace ScreenCapture
                 BorderFrame.Opacity = 0.5;
                 CloseButton.Visibility = Visibility.Collapsed;
                 MinimizeButton.Visibility = Visibility.Collapsed;
-                FrameColorButton.Visibility = Visibility.Collapsed;
+                if (_frameColorPicker != null)
+                {
+                    _frameColorPicker.Visibility = Visibility.Collapsed;
+                }
             };
 
             // 閉じるボタンのクリックイベント
             CloseButton.Click += (s, e) => Close();
 
             // 最小化ボタンのクリックイベント
-            MinimizeButton.Click += (s, e) => WindowState = WindowState.Minimized;
-
-            // 枠線色変更ボタンのクリックイベント
-            FrameColorButton.Click += (s, e) => ChangeFrameColor();
+            MinimizeButton.Click += (s, e) => WindowState = System.Windows.WindowState.Minimized;
 
             // ペイントツールバーの初期化
             InitializePaintToolbarWindow();
@@ -214,10 +224,6 @@ namespace ScreenCapture
             var paintToggle = new MenuItem { Header = "ペイントモード切り替え (Alt)" };
             paintToggle.Click += (_, __) => TogglePaintMode();
             menu.Items.Add(paintToggle);
-
-            var frameColor = new MenuItem { Header = "枠線の色を変更" };
-            frameColor.Click += (_, __) => ChangeFrameColor();
-            menu.Items.Add(frameColor);
 
             var copyComposite = new MenuItem { Header = "全体をコピー (Ctrl+C)" };
             copyComposite.Click += (_, __) => CopyCompositeToClipboard();
@@ -472,12 +478,15 @@ namespace ScreenCapture
                 var borderFrameVisibility = BorderFrame.Visibility;
                 var closeButtonVisibility = CloseButton.Visibility;
                 var minimizeButtonVisibility = MinimizeButton.Visibility;
-                var frameColorButtonVisibility = FrameColorButton.Visibility;
+                var frameColorPickerVisibility = _frameColorPicker?.Visibility ?? Visibility.Collapsed;
 
                 BorderFrame.Visibility = Visibility.Collapsed;
                 CloseButton.Visibility = Visibility.Collapsed;
                 MinimizeButton.Visibility = Visibility.Collapsed;
-                FrameColorButton.Visibility = Visibility.Collapsed;
+                if (_frameColorPicker != null)
+                {
+                    _frameColorPicker.Visibility = Visibility.Collapsed;
+                }
 
                 // UIの更新を待つ
                 Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
@@ -505,7 +514,10 @@ namespace ScreenCapture
                 BorderFrame.Visibility = borderFrameVisibility;
                 CloseButton.Visibility = closeButtonVisibility;
                 MinimizeButton.Visibility = minimizeButtonVisibility;
-                FrameColorButton.Visibility = frameColorButtonVisibility;
+                if (_frameColorPicker != null)
+                {
+                    _frameColorPicker.Visibility = frameColorPickerVisibility;
+                }
 
                 // 選択状態を復元
                 if (wasTextSelected && selectedText != null)
@@ -587,6 +599,11 @@ namespace ScreenCapture
             _isArrowMode = isEnabled;
             CancelArrowDrawing();
             _paintToolbarWindow?.SetArrowMode(isEnabled);
+            
+            if (_isPaintMode)
+            {
+                OverlayCanvas.Cursor = isEnabled ? Cursors.UpArrow : Cursors.Pen;
+            }
         }
 
         private static bool IsCtrlKeyPressed(WpfKeyEventArgs e)
@@ -837,34 +854,16 @@ namespace ScreenCapture
             }
         }
 
-        private void ChangeFrameColor()
+        private void OnFrameColorChanged(object? sender, RoutedPropertyChangedEventArgs<WpfColor?> e)
         {
-            var currentColor = BorderFrame.BorderBrush is SolidColorBrush b ? b.Color : Colors.Red;
-            using var dialog = new Forms.ColorDialog
-            {
-                FullOpen = true,
-                Color = System.Drawing.Color.FromArgb(
-                    currentColor.A,
-                    currentColor.R,
-                    currentColor.G,
-                    currentColor.B)
-            };
-
-            if (dialog.ShowDialog() != Forms.DialogResult.OK)
+            if (e.NewValue == null)
             {
                 return;
             }
 
-            var color = WpfColor.FromArgb(
-                dialog.Color.A,
-                dialog.Color.R,
-                dialog.Color.G,
-                dialog.Color.B);
-
-            var brush = new SolidColorBrush(color);
+            var brush = new SolidColorBrush(e.NewValue.Value);
             BorderFrame.BorderBrush = brush;
-            FrameColorButton.Background = brush;
-            TextStyleSettings.CaptureFrameColor = color;
+            TextStyleSettings.CaptureFrameColor = e.NewValue.Value;
         }
 
         private void OnWindowMouseWheel(object sender, MouseWheelEventArgs e)

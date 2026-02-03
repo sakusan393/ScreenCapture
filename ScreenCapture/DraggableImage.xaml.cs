@@ -5,8 +5,8 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Forms = System.Windows.Forms;
 using MediaColor = System.Windows.Media.Color;
+using Xceed.Wpf.Toolkit;
 
 namespace ScreenCapture
 {
@@ -35,6 +35,9 @@ namespace ScreenCapture
             ImageControl.Source = image;
             Width = image.PixelWidth;
             Height = image.PixelHeight;
+
+            BorderColorPicker.SelectedColor = _borderColor;
+            BorderColorPicker.SelectedColorChanged += OnBorderColorChanged;
 
             UpdateBorderVisibility();
 
@@ -101,13 +104,6 @@ namespace ScreenCapture
             BottomRightHandle.DragDelta += (s, e) => OnResizeDelta(e, 1, 1);
             BottomRightHandle.MouseDown += (s, e) => e.Handled = true;
 
-            BorderColorButton.Click += (_, e) =>
-            {
-                ChangeBorderColor();
-                e.Handled = true;
-            };
-            BorderColorButton.MouseDown += (s, e) => e.Handled = true;
-
             BorderToggleButton.Click += (_, e) =>
             {
                 ToggleBorder();
@@ -159,28 +155,14 @@ namespace ScreenCapture
             UpdateBorderVisibility();
         }
 
-        private void ChangeBorderColor()
+        private void OnBorderColorChanged(object? sender, RoutedPropertyChangedEventArgs<MediaColor?> e)
         {
-            using var dialog = new Forms.ColorDialog
-            {
-                FullOpen = true,
-                Color = System.Drawing.Color.FromArgb(
-                    _borderColor.A,
-                    _borderColor.R,
-                    _borderColor.G,
-                    _borderColor.B)
-            };
-
-            if (dialog.ShowDialog() != Forms.DialogResult.OK)
+            if (e.NewValue == null)
             {
                 return;
             }
 
-            _borderColor = MediaColor.FromArgb(
-                dialog.Color.A,
-                dialog.Color.R,
-                dialog.Color.G,
-                dialog.Color.B);
+            _borderColor = e.NewValue.Value;
             TextStyleSettings.ImageBorderColor = _borderColor;
             UpdateBorderVisibility();
         }

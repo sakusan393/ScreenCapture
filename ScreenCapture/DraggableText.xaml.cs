@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Forms = System.Windows.Forms;
 using MediaColor = System.Windows.Media.Color;
+using Xceed.Wpf.Toolkit;
 
 namespace ScreenCapture
 {
@@ -31,6 +32,13 @@ namespace ScreenCapture
 
             var textColor = TextStyleSettings.TextColor;
             var backgroundColor = TextStyleSettings.BackgroundColor;
+            
+            TextColorPicker.SelectedColor = textColor;
+            TextColorPicker.SelectedColorChanged += OnTextColorChanged;
+            
+            TextBackgroundPicker.SelectedColor = backgroundColor;
+            TextBackgroundPicker.SelectedColorChanged += OnBackgroundColorChanged;
+            
             SetStyle(TextBox.FontSize, textColor, backgroundColor);
             
             // 編集中はドラッグ無効（入力を優先）
@@ -81,16 +89,6 @@ namespace ScreenCapture
             {
                 StartEdit();
             };
-
-            // 色変更ボタン
-            TextColorPicker.Click += (_, __) => ChangeTextColor();
-            TextColorPicker.MouseDown += (s, e) => e.Handled = true;
-
-            TextBackgroundPicker.Click += (_, __) => ChangeBackgroundColor();
-            TextBackgroundPicker.MouseDown += (s, e) => e.Handled = true;
-
-            TextBackgroundClearButton.Click += (_, __) => ResetBackgroundColor();
-            TextBackgroundClearButton.MouseDown += (s, e) => e.Handled = true;
 
             // 文字サイズ変更ボタン（押しっぱなし対応）
             FontSizeUpButton.PreviewMouseLeftButtonDown += (_, __) => StartFontSizeChange(1);
@@ -161,8 +159,17 @@ namespace ScreenCapture
             TextBox.Foreground = new SolidColorBrush(color);
             TextBox.CaretBrush = new SolidColorBrush(color);
             TextBox.Background = new SolidColorBrush(backgroundColor);
-            TextColorPicker.Background = new SolidColorBrush(color);
-            TextBackgroundPicker.Background = new SolidColorBrush(backgroundColor);
+            
+            if (TextColorPicker.SelectedColor != color)
+            {
+                TextColorPicker.SelectedColor = color;
+            }
+            
+            if (TextBackgroundPicker.SelectedColor != backgroundColor)
+            {
+                TextBackgroundPicker.SelectedColor = backgroundColor;
+            }
+            
             TextStyleSettings.TextColor = color;
             TextStyleSettings.BackgroundColor = backgroundColor;
         }
@@ -175,55 +182,29 @@ namespace ScreenCapture
         public MediaColor GetBackgroundColor()
             => TextBox.Background is SolidColorBrush b ? b.Color : Colors.Transparent;
 
-        private void ChangeTextColor()
+        private void OnTextColorChanged(object? sender, RoutedPropertyChangedEventArgs<MediaColor?> e)
         {
-            if (!TryPickColor(GetColor(), out var color))
+            if (e.NewValue == null)
             {
                 return;
             }
 
-            SetStyle(GetFontSize(), color, GetBackgroundColor());
+            var color = e.NewValue.Value;
+            TextBox.Foreground = new SolidColorBrush(color);
+            TextBox.CaretBrush = new SolidColorBrush(color);
+            TextStyleSettings.TextColor = color;
         }
 
-        private void ChangeBackgroundColor()
+        private void OnBackgroundColorChanged(object? sender, RoutedPropertyChangedEventArgs<MediaColor?> e)
         {
-            if (!TryPickColor(GetBackgroundColor(), out var color))
+            if (e.NewValue == null)
             {
                 return;
             }
 
-            SetStyle(GetFontSize(), GetColor(), color);
-        }
-
-        private void ResetBackgroundColor()
-        {
-            SetStyle(GetFontSize(), GetColor(), Colors.Transparent);
-        }
-
-        private static bool TryPickColor(MediaColor initialColor, out MediaColor selectedColor)
-        {
-            using var dialog = new Forms.ColorDialog
-            {
-                FullOpen = true,
-                Color = System.Drawing.Color.FromArgb(
-                    initialColor.A,
-                    initialColor.R,
-                    initialColor.G,
-                    initialColor.B)
-            };
-
-            if (dialog.ShowDialog() != Forms.DialogResult.OK)
-            {
-                selectedColor = default;
-                return false;
-            }
-
-            selectedColor = MediaColor.FromArgb(
-                dialog.Color.A,
-                dialog.Color.R,
-                dialog.Color.G,
-                dialog.Color.B);
-            return true;
+            var color = e.NewValue.Value;
+            TextBox.Background = new SolidColorBrush(color);
+            TextStyleSettings.BackgroundColor = color;
         }
 
         // 文字サイズ変更の開始（押しっぱなし対応）
