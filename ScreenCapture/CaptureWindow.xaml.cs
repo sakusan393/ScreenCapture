@@ -229,6 +229,10 @@ namespace ScreenCapture
             copyComposite.Click += (_, __) => CopyCompositeToClipboard();
             menu.Items.Add(copyComposite);
 
+            var saveImage = new MenuItem { Header = "画像として保存 (Ctrl+S)" };
+            saveImage.Click += (_, __) => SaveAsImage();
+            menu.Items.Add(saveImage);
+
             OverlayCanvas.ContextMenu = menu;
         }
 
@@ -283,6 +287,13 @@ namespace ScreenCapture
             if (e.Key == Key.C && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
                 CopyCompositeToClipboard();
+                e.Handled = true;
+            }
+
+            // Ctrl+Sで画像として保存
+            if (e.Key == Key.S && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                SaveAsImage();
                 e.Handled = true;
             }
         }
@@ -1001,6 +1012,117 @@ namespace ScreenCapture
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round
             };
+        }
+
+        // 画像として保存
+        private void SaveAsImage()
+        {
+            try
+            {
+                // すべての選択状態を一時的に解除（バウンディングボックスを非表示）
+                var wasTextSelected = _selectedText != null;
+                var wasImageSelected = _selectedImage != null;
+                var selectedText = _selectedText;
+                var selectedImage = _selectedImage;
+
+                // 選択を解除してバウンディングボックスを非表示
+                DeselectAllTexts();
+                DeselectAllImages();
+
+                // UI要素を一時的に非表示
+                var borderFrameVisibility = BorderFrame.Visibility;
+                var closeButtonVisibility = CloseButton.Visibility;
+                var minimizeButtonVisibility = MinimizeButton.Visibility;
+                var frameColorPickerVisibility = _frameColorPicker?.Visibility ?? Visibility.Collapsed;
+
+                BorderFrame.Visibility = Visibility.Collapsed;
+                CloseButton.Visibility = Visibility.Collapsed;
+                MinimizeButton.Visibility = Visibility.Collapsed;
+                if (_frameColorPicker != null)
+                {
+                    _frameColorPicker.Visibility = Visibility.Collapsed;
+                }
+
+                // UIの更新を待つ
+                Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
+
+                // ウィンドウ全体のサイズを取得
+                int width = (int)ActualWidth;
+                int height = (int)ActualHeight;
+
+                // RenderTargetBitmapを使用してウィンドウをキャプチャ
+                var renderTarget = new RenderTargetBitmap(
+                    width,
+                    height,
+                    96, // dpiX
+                    96, // dpiY
+                    PixelFormats.Pbgra32);
+
+                // Gridをレンダリング（CaptureImageとOverlayCanvasを含む）
+                var grid = (Grid)Content;
+                renderTarget.Render(grid);
+
+                // 保存ダイアログを表示
+                var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "PNG画像 (*.png)|*.png|JPEG画像 (*.jpg)|*.jpg|BMP画像 (*.bmp)|*.bmp",
+                    DefaultExt = ".png",
+                    FileName = $"ScreenCapture_{DateTime.Now:yyyyMMdd_HHmmss}"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    BitmapEncoder encoder;
+                    var extension = System.IO.Path.GetExtension(saveFileDialog.FileName).ToLower();
+                    
+                    if (extension == ".jpg" || extension == ".jpeg")
+                    {
+                        encoder = new JpegBitmapEncoder { QualityLevel = 95 };
+                    }
+                    else if (extension == ".bmp")
+                    {
+                        encoder = new BmpBitmapEncoder();
+                    }
+                    else
+                    {
+                        encoder = new PngBitmapEncoder();
+                    }
+
+                    encoder.Frames.Add(BitmapFrame.Create(renderTarget));
+
+                    using (var fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create))
+                    {
+                        encoder.Save(fileStream);
+                    }
+
+                    MessageBox.Show($"画像を保存しました:\n{saveFileDialog.FileName}", "保存完了", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+
+                // UI要素を復元
+                BorderFrame.Visibility = borderFrameVisibility;
+                CloseButton.Visibility = closeButtonVisibility;
+                MinimizeButton.Visibility = minimizeButtonVisibility;
+                if (_frameColorPicker != null)
+                {
+                    _frameColorPicker.Visibility = frameColorPickerVisibility;
+                }
+
+                // 選択状態を復元
+                if (wasTextSelected && selectedText != null)
+                {
+                    _selectedText = selectedText;
+                    selectedText.Select();
+                }
+                if (wasImageSelected && selectedImage != null)
+                {
+                    _selectedImage = selectedImage;
+                    selectedImage.Select();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"保存に失敗しました: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }
