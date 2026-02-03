@@ -22,12 +22,16 @@
     <Description>画面キャプチャツール - テキスト・画像追加・ペイント機能付き</Description>
     
     <!-- アプリケーションアイコン -->
-    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationIcon>app202620231858.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Extended.Wpf.Toolkit" Version="5.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="app202620231858.ico" />
   </ItemGroup>
 
 </Project>
