@@ -31,8 +31,12 @@ namespace ScreenCapture
         // ペイントモード関連
         private bool _isPaintMode;
         private bool _isArrowMode;
-        private bool _isArrowStartSet;
+        private bool _isArrowDrawing;
         private WpfPoint _arrowStartPoint;
+        private Line? _arrowLine;
+        private Line? _arrowHeadLeft;
+        private Line? _arrowHeadRight;
+        private List<UIElement>? _arrowElements;
         private bool _isPainting;
         private WpfPoint _lastPoint;
         private WpfPoint _strokeStartPoint;
@@ -58,6 +62,7 @@ namespace ScreenCapture
             BorderFrame.BorderBrush = new SolidColorBrush(TextStyleSettings.CaptureFrameColor);
 
             MouseWheel += OnWindowMouseWheel;
+            KeyUp += OnKeyUp;
 
             Left = screenLocation.X;
             Top = screenLocation.Y;
@@ -228,11 +233,11 @@ namespace ScreenCapture
                 return;
             }
 
-            if (IsCtrlKeyPressed(e))
+            if (IsCtrlKeyPressed(e) && (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl))
             {
-                if (!e.IsRepeat)
+                if (!e.IsRepeat && _isPaintMode)
                 {
-                    ToggleArrowMode();
+                    SetArrowMode(true);
                 }
                 e.Handled = true;
                 return;
@@ -265,6 +270,15 @@ namespace ScreenCapture
             if (e.Key == Key.C && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
                 CopyCompositeToClipboard();
+                e.Handled = true;
+            }
+        }
+
+        private void OnKeyUp(object sender, WpfKeyEventArgs e)
+        {
+            if ((e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl) && _isPaintMode)
+            {
+                SetArrowMode(false);
                 e.Handled = true;
             }
         }
@@ -549,7 +563,7 @@ namespace ScreenCapture
                 Focus();
                 OverlayCanvas.Cursor = Cursors.Arrow;
                 _isPainting = false;
-                _isArrowStartSet = false;
+                CancelArrowDrawing();
             }
         }
 
@@ -561,7 +575,7 @@ namespace ScreenCapture
         private void SetArrowMode(bool isEnabled)
         {
             _isArrowMode = isEnabled;
-            _isArrowStartSet = false;
+            CancelArrowDrawing();
             _paintToolbarWindow?.SetArrowMode(isEnabled);
         }
 
@@ -619,7 +633,7 @@ namespace ScreenCapture
 
             if (_isArrowMode)
             {
-                HandleArrowClick(e.GetPosition(OverlayCanvas));
+                StartArrowDrawing(e.GetPosition(OverlayCanvas));
                 e.Handled = true;
                 return;
             }
@@ -634,10 +648,17 @@ namespace ScreenCapture
             e.Handled = true;
         }
 
-        // Canvasマウス移動
         private void Canvas_MouseMove(object sender, WpfMouseEventArgs e)
         {
-            if (!_isPaintMode || !_isPainting) return;
+            if (!_isPaintMode) return;
+
+            if (_isArrowMode && _isArrowDrawing)
+            {
+                UpdateArrowDrawing(e.GetPosition(OverlayCanvas));
+                return;
+            }
+
+            if (!_isPainting) return;
 
             var currentPoint = e.GetPosition(OverlayCanvas);
 
@@ -698,6 +719,13 @@ namespace ScreenCapture
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (!_isPaintMode) return;
+
+            if (_isArrowMode && _isArrowDrawing)
+            {
+                FinishArrowDrawing(e.GetPosition(OverlayCanvas));
+                e.Handled = true;
+                return;
+            }
 
             _isPainting = false;
             OverlayCanvas.ReleaseMouseCapture();
@@ -842,54 +870,90 @@ namespace ScreenCapture
             _contentLayer.Opacity = Math.Clamp(_contentLayer.Opacity + delta, minOpacity, maxOpacity);
         }
 
-        private void HandleArrowClick(WpfPoint point)
+        private void StartArrowDrawing(WpfPoint point)
         {
-            if (!_isArrowStartSet)
-            {
-                _arrowStartPoint = point;
-                _isArrowStartSet = true;
-                return;
-            }
+            CancelArrowDrawing();
+            _isArrowDrawing = true;
+            _arrowStartPoint = point;
 
-            var elements = CreateArrowElements(_arrowStartPoint, point);
-            if (elements.Count == 0)
-            {
-                _isArrowStartSet = false;
-                return;
-            }
+            var stroke = new SolidColorBrush(_paintColor);
+            _arrowLine = CreateArrowLine(point, point, stroke);
+            _arrowHeadLeft = CreateArrowLine(point, point, stroke);
+            _arrowHeadRight = CreateArrowLine(point, point, stroke);
 
-            foreach (var element in elements)
+            _arrowElements = new List<UIElement> { _arrowLine, _arrowHeadLeft, _arrowHeadRight };
+
+            foreach (var element in _arrowElements)
             {
                 OverlayCanvas.Children.Add(element);
             }
 
-            AddStrokeToUndoStack(elements);
-            _isArrowStartSet = false;
+            OverlayCanvas.CaptureMouse();
         }
 
-        private List<UIElement> CreateArrowElements(WpfPoint start, WpfPoint end)
+        private void UpdateArrowDrawing(WpfPoint point)
         {
-            var elements = new List<UIElement>();
+            if (_arrowLine == null || _arrowHeadLeft == null || _arrowHeadRight == null)
+            {
+                return;
+            }
+
+            UpdateArrowElements(_arrowStartPoint, point, _arrowLine, _arrowHeadLeft, _arrowHeadRight);
+        }
+
+        private void FinishArrowDrawing(WpfPoint point)
+        {
+            if (_arrowLine == null || _arrowHeadLeft == null || _arrowHeadRight == null || _arrowElements == null)
+            {
+                CancelArrowDrawing();
+                return;
+            }
+
+            UpdateArrowElements(_arrowStartPoint, point, _arrowLine, _arrowHeadLeft, _arrowHeadRight);
+
+            AddStrokeToUndoStack(new List<UIElement>(_arrowElements));
+            _isArrowDrawing = false;
+            OverlayCanvas.ReleaseMouseCapture();
+
+            _arrowElements = null;
+            _arrowLine = null;
+            _arrowHeadLeft = null;
+            _arrowHeadRight = null;
+        }
+
+        private void CancelArrowDrawing()
+        {
+            if (_arrowElements != null)
+            {
+                foreach (var element in _arrowElements)
+                {
+                    OverlayCanvas.Children.Remove(element);
+                }
+            }
+
+            _arrowElements = null;
+            _arrowLine = null;
+            _arrowHeadLeft = null;
+            _arrowHeadRight = null;
+            _isArrowDrawing = false;
+        }
+
+        private void UpdateArrowElements(WpfPoint start, WpfPoint end, Line mainLine, Line headLeft, Line headRight)
+        {
+            mainLine.X1 = start.X;
+            mainLine.Y1 = start.Y;
+            mainLine.X2 = end.X;
+            mainLine.Y2 = end.Y;
+
             var direction = end - start;
             if (direction.Length < 1)
             {
-                return elements;
+                headLeft.X1 = headLeft.X2 = end.X;
+                headLeft.Y1 = headLeft.Y2 = end.Y;
+                headRight.X1 = headRight.X2 = end.X;
+                headRight.Y1 = headRight.Y2 = end.Y;
+                return;
             }
-
-            var stroke = new SolidColorBrush(_paintColor);
-            var mainLine = new Line
-            {
-                X1 = start.X,
-                Y1 = start.Y,
-                X2 = end.X,
-                Y2 = end.Y,
-                Stroke = stroke,
-                StrokeThickness = _paintThickness,
-                StrokeStartLineCap = PenLineCap.Round,
-                StrokeEndLineCap = PenLineCap.Round
-            };
-
-            elements.Add(mainLine);
 
             var unit = direction;
             unit.Normalize();
@@ -902,10 +966,15 @@ namespace ScreenCapture
             var leftPoint = arrowBase + perpendicular * (arrowWidth / 2);
             var rightPoint = arrowBase - perpendicular * (arrowWidth / 2);
 
-            elements.Add(CreateArrowLine(end, leftPoint, stroke));
-            elements.Add(CreateArrowLine(end, rightPoint, stroke));
+            headLeft.X1 = end.X;
+            headLeft.Y1 = end.Y;
+            headLeft.X2 = leftPoint.X;
+            headLeft.Y2 = leftPoint.Y;
 
-            return elements;
+            headRight.X1 = end.X;
+            headRight.Y1 = end.Y;
+            headRight.X2 = rightPoint.X;
+            headRight.Y2 = rightPoint.Y;
         }
 
         private Line CreateArrowLine(WpfPoint start, WpfPoint end, System.Windows.Media.Brush stroke)
