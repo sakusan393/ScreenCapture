@@ -59,7 +59,9 @@ namespace ScreenCapture
 
             CaptureImage.Source = image;
 
-            BorderFrame.BorderBrush = new SolidColorBrush(TextStyleSettings.CaptureFrameColor);
+            var frameColor = TextStyleSettings.CaptureFrameColor;
+            BorderFrame.BorderBrush = new SolidColorBrush(frameColor);
+            FrameColorButton.Background = new SolidColorBrush(frameColor);
 
             MouseWheel += OnWindowMouseWheel;
             KeyUp += OnKeyUp;
@@ -121,6 +123,7 @@ namespace ScreenCapture
                 BorderFrame.Opacity = 1;
                 CloseButton.Visibility = Visibility.Visible;
                 MinimizeButton.Visibility = Visibility.Visible;
+                FrameColorButton.Visibility = Visibility.Visible;
             };
 
             // マウスが出たら枠線の透明度を下げる（25%）と閉じるボタンを非表示
@@ -129,6 +132,7 @@ namespace ScreenCapture
                 BorderFrame.Opacity = 0.5;
                 CloseButton.Visibility = Visibility.Collapsed;
                 MinimizeButton.Visibility = Visibility.Collapsed;
+                FrameColorButton.Visibility = Visibility.Collapsed;
             };
 
             // 閉じるボタンのクリックイベント
@@ -136,6 +140,9 @@ namespace ScreenCapture
 
             // 最小化ボタンのクリックイベント
             MinimizeButton.Click += (s, e) => WindowState = WindowState.Minimized;
+
+            // 枠線色変更ボタンのクリックイベント
+            FrameColorButton.Click += (s, e) => ChangeFrameColor();
 
             // ペイントツールバーの初期化
             InitializePaintToolbarWindow();
@@ -465,10 +472,12 @@ namespace ScreenCapture
                 var borderFrameVisibility = BorderFrame.Visibility;
                 var closeButtonVisibility = CloseButton.Visibility;
                 var minimizeButtonVisibility = MinimizeButton.Visibility;
+                var frameColorButtonVisibility = FrameColorButton.Visibility;
 
                 BorderFrame.Visibility = Visibility.Collapsed;
                 CloseButton.Visibility = Visibility.Collapsed;
                 MinimizeButton.Visibility = Visibility.Collapsed;
+                FrameColorButton.Visibility = Visibility.Collapsed;
 
                 // UIの更新を待つ
                 Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
@@ -496,6 +505,7 @@ namespace ScreenCapture
                 BorderFrame.Visibility = borderFrameVisibility;
                 CloseButton.Visibility = closeButtonVisibility;
                 MinimizeButton.Visibility = minimizeButtonVisibility;
+                FrameColorButton.Visibility = frameColorButtonVisibility;
 
                 // 選択状態を復元
                 if (wasTextSelected && selectedText != null)
@@ -851,7 +861,9 @@ namespace ScreenCapture
                 dialog.Color.G,
                 dialog.Color.B);
 
-            BorderFrame.BorderBrush = new SolidColorBrush(color);
+            var brush = new SolidColorBrush(color);
+            BorderFrame.BorderBrush = brush;
+            FrameColorButton.Background = brush;
             TextStyleSettings.CaptureFrameColor = color;
         }
 
