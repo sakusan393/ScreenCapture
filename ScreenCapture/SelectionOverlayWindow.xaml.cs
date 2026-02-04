@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -16,8 +17,35 @@ namespace ScreenCapture
 {
     public partial class SelectionOverlayWindow : Window
     {
+        private const uint GaRoot = 2;
         private Point _start;
         private bool _dragging;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativePoint
+        {
+            public int X;
+            public int Y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativeRect
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr WindowFromPoint(NativePoint point);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetAncestor(IntPtr hwnd, uint gaFlags);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetWindowRect(IntPtr hwnd, out NativeRect rect);
 
         public SelectionOverlayWindow()
         {
@@ -41,6 +69,17 @@ namespace ScreenCapture
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (e.ChangedButton == MouseButton.Left && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            {
+                var pos = e.GetPosition(this);
+                var screenPoint = new Point(
+                    pos.X + SystemParameters.VirtualScreenLeft,
+                    pos.Y + SystemParameters.VirtualScreenTop);
+                CaptureWindowAtPoint(screenPoint);
+                e.Handled = true;
+                return;
+            }
+
             _start = e.GetPosition(this);
             _dragging = true;
             CaptureMouse();
@@ -143,6 +182,54 @@ namespace ScreenCapture
             img.EndInit();
             img.Freeze();
             return img;
+        }
+
+        private void CaptureWindowAtPoint(Point screenPoint)
+        {
+            Hide();
+            Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
+            System.Threading.Thread.Sleep(50);
+
+            var dpi = VisualTreeHelper.GetDpi(this);
+            var hwnd = WindowFromPoint(new NativePoint
+            {
+                X = (int)Math.Round(screenPoint.X * dpi.DpiScaleX),
+                Y = (int)Math.Round(screenPoint.Y * dpi.DpiScaleY)
+            });
+            if (hwnd == IntPtr.Zero)
+            {
+                Close();
+                return;
+            }
+
+            hwnd = GetAncestor(hwnd, GaRoot);
+            if (hwnd == IntPtr.Zero || !GetWindowRect(hwnd, out var rect))
+            {
+                Close();
+                return;
+            }
+
+            var screenRect = new Rectangle(
+                rect.Left,
+                rect.Top,
+                rect.Right - rect.Left,
+                rect.Bottom - rect.Top);
+
+            if (screenRect.Width < 2 || screenRect.Height < 2)
+            {
+                Close();
+                return;
+            }
+
+            var bmp = CaptureScreen(screenRect);
+            var bitmapSource = ToBitmapSource(bmp);
+
+            WpfClipboard.SetImage(bitmapSource);
+
+            var cap = new CaptureWindow(bitmapSource, screenRect.Location);
+            cap.Show();
+
+            Close();
         }
     }
 }
