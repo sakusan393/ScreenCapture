@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="app202620231858.ico" />
+    <EmbeddedResource Include="app202620231858.ico" />
   </ItemGroup>
 
 </Project>
