@@ -8,12 +8,27 @@ namespace ScreenCapture
 {
     public partial class App : Application
     {
+        private const string SingleInstanceMutexName = "ScreenCapture.SingleInstance";
+        private const string SingleInstancePipeName = "ScreenCapture.SingleInstancePipe";
+        private static System.Threading.Mutex? _singleInstanceMutex;
+        private System.Threading.CancellationTokenSource? _singleInstanceCts;
+
         private HotKeyManager? _hotKeyManager;
         private NotifyIcon? _notifyIcon;
         private Window? _hiddenWindow;
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            _singleInstanceMutex = new System.Threading.Mutex(true, SingleInstanceMutexName, out var createdNew);
+            if (!createdNew)
+            {
+                SignalExistingInstance();
+                Shutdown();
+                return;
+            }
+
+            StartSingleInstanceListener();
+
             // 非表示ウィンドウを作成（ホットキー受信用）
             _hiddenWindow = new Window
             {
@@ -81,21 +96,16 @@ namespace ScreenCapture
                     var success = _hotKeyManager.RegisterHotKey(HotKeySettings.Modifiers, HotKeySettings.Key);
                     if (!success)
                     {
-                        System.Windows.MessageBox.Show(
-                            $"Failed to register hotkey: {HotKeySettings.Modifiers}+{HotKeySettings.Key}\n" +
-                            "The hotkey may already be in use by another application.",
-                            "Hotkey Registration Failed",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Warning);
+                        HotKeySettings.IsEnabled = false;
+                        _hotKeyManager.UnregisterAll();
+                        UpdateContextMenu();
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    System.Windows.MessageBox.Show(
-                        $"Error registering hotkey: {ex.Message}",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
+                    HotKeySettings.IsEnabled = false;
+                    _hotKeyManager.UnregisterAll();
+                    UpdateContextMenu();
                 }
             }
         }
@@ -121,6 +131,60 @@ namespace ScreenCapture
         {
             var overlay = new SelectionOverlayWindow();
             overlay.Show();
+        }
+
+        private void SignalExistingInstance()
+        {
+            try
+            {
+                using var client = new System.IO.Pipes.NamedPipeClientStream(
+                    ".",
+                    SingleInstancePipeName,
+                    System.IO.Pipes.PipeDirection.Out);
+                client.Connect(500);
+                using var writer = new System.IO.StreamWriter(client) { AutoFlush = true };
+                writer.WriteLine("capture");
+            }
+            catch
+            {
+            }
+        }
+
+        private void StartSingleInstanceListener()
+        {
+            _singleInstanceCts = new System.Threading.CancellationTokenSource();
+            var token = _singleInstanceCts.Token;
+
+            System.Threading.Tasks.Task.Run(async () =>
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        using var server = new System.IO.Pipes.NamedPipeServerStream(
+                            SingleInstancePipeName,
+                            System.IO.Pipes.PipeDirection.In,
+                            1,
+                            System.IO.Pipes.PipeTransmissionMode.Message,
+                            System.IO.Pipes.PipeOptions.Asynchronous);
+
+                        await server.WaitForConnectionAsync(token);
+                        using var reader = new System.IO.StreamReader(server);
+                        var message = await reader.ReadLineAsync();
+                        if (string.Equals(message, "capture", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Dispatcher.Invoke(ShowSelectionOverlay);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                    catch
+                    {
+                    }
+                }
+            }, token);
         }
 
         private void CreateNotifyIcon()
@@ -211,7 +275,11 @@ namespace ScreenCapture
 
         private void ShowHotKeySettings()
         {
-            var settingsWindow = new HotKeySettingsWindow();
+            var settingsWindow = new HotKeySettingsWindow
+            {
+                Owner = _hiddenWindow,
+                Topmost = true
+            };
             if (settingsWindow.ShowDialog() == true)
             {
                 // ホットキーを再初期化
@@ -238,6 +306,15 @@ namespace ScreenCapture
                 // メニューを更新
                 UpdateContextMenu();
             }
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            _singleInstanceCts?.Cancel();
+            _singleInstanceCts?.Dispose();
+            _singleInstanceMutex?.ReleaseMutex();
+            _singleInstanceMutex?.Dispose();
+            base.OnExit(e);
         }
     }
 }
