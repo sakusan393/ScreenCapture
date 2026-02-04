@@ -280,6 +280,7 @@ namespace ScreenCapture
 
             _contentOffsetX = Math.Max(0, _contentOffsetX - delta);
             UpdateContentTransform();
+            ShiftOverlayElements(-delta, 0);
         }
 
         private void ResizeRight(double delta)
@@ -309,6 +310,7 @@ namespace ScreenCapture
 
             _contentOffsetY = Math.Max(0, _contentOffsetY - delta);
             UpdateContentTransform();
+            ShiftOverlayElements(0, -delta);
         }
 
         private void ResizeBottom(double delta)
@@ -328,6 +330,38 @@ namespace ScreenCapture
             {
                 _contentTransform.X = _contentOffsetX;
                 _contentTransform.Y = _contentOffsetY;
+            }
+        }
+
+        private void ShiftOverlayElements(double deltaX, double deltaY)
+        {
+            if (OverlayCanvas == null)
+            {
+                return;
+            }
+
+            foreach (var child in OverlayCanvas.Children)
+            {
+                if (child is Line line)
+                {
+                    line.X1 += deltaX;
+                    line.X2 += deltaX;
+                    line.Y1 += deltaY;
+                    line.Y2 += deltaY;
+                    continue;
+                }
+
+                if (child is FrameworkElement element)
+                {
+                    var left = Canvas.GetLeft(element);
+                    var top = Canvas.GetTop(element);
+
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+
+                    Canvas.SetLeft(element, left + deltaX);
+                    Canvas.SetTop(element, top + deltaY);
+                }
             }
         }
 
