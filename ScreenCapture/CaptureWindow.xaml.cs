@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -27,7 +28,14 @@ namespace ScreenCapture
         private WpfPoint _dragStartPoint;
         private PaintToolbarWindow? _paintToolbarWindow;
         private Grid? _contentLayer;
+        private Grid? _captureContent;
+        private TranslateTransform? _contentTransform;
+        private double _captureWidth;
+        private double _captureHeight;
+        private double _contentOffsetX;
+        private double _contentOffsetY;
         private ColorPicker? _frameColorPicker;
+        private ColorPicker? _backgroundColorPicker;
 
         // ペイントモード関連
         private bool _isPaintMode;
@@ -57,9 +65,27 @@ namespace ScreenCapture
             InitializeComponent();
 
             _contentLayer = FindName("ContentLayer") as Grid;
+            _captureContent = FindName("CaptureContent") as Grid;
             _frameColorPicker = FindName("FrameColorPicker") as ColorPicker;
+            _backgroundColorPicker = FindName("BackgroundColorPicker") as ColorPicker;
+
+            _captureWidth = image.Width;
+            _captureHeight = image.Height;
 
             CaptureImage.Source = image;
+            CaptureImage.Width = _captureWidth;
+            CaptureImage.Height = _captureHeight;
+
+            _contentTransform = new TranslateTransform();
+            if (_captureContent != null)
+            {
+                _captureContent.Width = _captureWidth;
+                _captureContent.Height = _captureHeight;
+                _captureContent.RenderTransform = _contentTransform;
+            }
+
+            MinWidth = _captureWidth;
+            MinHeight = _captureHeight;
 
             var frameColor = TextStyleSettings.CaptureFrameColor;
             BorderFrame.BorderBrush = new SolidColorBrush(frameColor);
@@ -70,15 +96,27 @@ namespace ScreenCapture
                 _frameColorPicker.SelectedColorChanged += OnFrameColorChanged;
             }
 
+            if (_contentLayer != null)
+            {
+                var backgroundColor = TextStyleSettings.CaptureBackgroundColor;
+                _contentLayer.Background = new SolidColorBrush(backgroundColor);
+                if (_backgroundColorPicker != null)
+                {
+                    _backgroundColorPicker.SelectedColor = backgroundColor;
+                    _backgroundColorPicker.SelectedColorChanged += OnBackgroundColorChanged;
+                }
+            }
+
+            InitializeResizeHandles();
+
             MouseWheel += OnWindowMouseWheel;
             KeyUp += OnKeyUp;
 
             Left = screenLocation.X;
             Top = screenLocation.Y;
 
-            // ウィンドウのサイズはキャプチャ画像のサイズに固定
-            Width = image.PixelWidth;
-            Height = image.PixelHeight;
+            Width = _captureWidth;
+            Height = _captureHeight;
 
             // Escキーでウィンドウを閉じる
             KeyDown += (s, e) =>
@@ -134,6 +172,10 @@ namespace ScreenCapture
                 {
                     _frameColorPicker.Visibility = Visibility.Visible;
                 }
+                if (_backgroundColorPicker != null)
+                {
+                    _backgroundColorPicker.Visibility = Visibility.Visible;
+                }
             };
 
             // マウスが出たら枠線の透明度を下げる（25%）と閉じるボタンを非表示
@@ -145,6 +187,10 @@ namespace ScreenCapture
                 if (_frameColorPicker != null)
                 {
                     _frameColorPicker.Visibility = Visibility.Collapsed;
+                }
+                if (_backgroundColorPicker != null)
+                {
+                    _backgroundColorPicker.Visibility = Visibility.Collapsed;
                 }
             };
 
@@ -164,6 +210,125 @@ namespace ScreenCapture
                 _paintToolbarWindow?.Close();
                 _paintToolbarWindow = null;
             };
+        }
+
+        private void InitializeResizeHandles()
+        {
+            if (FindName("ResizeLeftThumb") is Thumb left)
+            {
+                left.DragDelta += (_, e) => ResizeLeft(e.HorizontalChange);
+            }
+            if (FindName("ResizeRightThumb") is Thumb right)
+            {
+                right.DragDelta += (_, e) => ResizeRight(e.HorizontalChange);
+            }
+            if (FindName("ResizeTopThumb") is Thumb top)
+            {
+                top.DragDelta += (_, e) => ResizeTop(e.VerticalChange);
+            }
+            if (FindName("ResizeBottomThumb") is Thumb bottom)
+            {
+                bottom.DragDelta += (_, e) => ResizeBottom(e.VerticalChange);
+            }
+            if (FindName("ResizeTopLeftThumb") is Thumb topLeft)
+            {
+                topLeft.DragDelta += (_, e) =>
+                {
+                    ResizeLeft(e.HorizontalChange);
+                    ResizeTop(e.VerticalChange);
+                };
+            }
+            if (FindName("ResizeTopRightThumb") is Thumb topRight)
+            {
+                topRight.DragDelta += (_, e) =>
+                {
+                    ResizeRight(e.HorizontalChange);
+                    ResizeTop(e.VerticalChange);
+                };
+            }
+            if (FindName("ResizeBottomLeftThumb") is Thumb bottomLeft)
+            {
+                bottomLeft.DragDelta += (_, e) =>
+                {
+                    ResizeLeft(e.HorizontalChange);
+                    ResizeBottom(e.VerticalChange);
+                };
+            }
+            if (FindName("ResizeBottomRightThumb") is Thumb bottomRight)
+            {
+                bottomRight.DragDelta += (_, e) =>
+                {
+                    ResizeRight(e.HorizontalChange);
+                    ResizeBottom(e.VerticalChange);
+                };
+            }
+        }
+
+        private void ResizeLeft(double delta)
+        {
+            var newWidth = Width - delta;
+            var newLeft = Left + delta;
+
+            if (newWidth < MinWidth)
+            {
+                newLeft -= (MinWidth - newWidth);
+                newWidth = MinWidth;
+            }
+
+            Width = newWidth;
+            Left = newLeft;
+
+            _contentOffsetX = Math.Max(0, _contentOffsetX - delta);
+            UpdateContentTransform();
+        }
+
+        private void ResizeRight(double delta)
+        {
+            var newWidth = Width + delta;
+            if (newWidth < MinWidth)
+            {
+                newWidth = MinWidth;
+            }
+
+            Width = newWidth;
+        }
+
+        private void ResizeTop(double delta)
+        {
+            var newHeight = Height - delta;
+            var newTop = Top + delta;
+
+            if (newHeight < MinHeight)
+            {
+                newTop -= (MinHeight - newHeight);
+                newHeight = MinHeight;
+            }
+
+            Height = newHeight;
+            Top = newTop;
+
+            _contentOffsetY = Math.Max(0, _contentOffsetY - delta);
+            UpdateContentTransform();
+        }
+
+        private void ResizeBottom(double delta)
+        {
+            var newHeight = Height + delta;
+            if (newHeight < MinHeight)
+            {
+                newHeight = MinHeight;
+            }
+
+            Height = newHeight;
+        }
+
+        private void UpdateContentTransform()
+        {
+            if (_contentTransform != null)
+            {
+                _contentTransform.X = _contentOffsetX;
+                _contentTransform.Y = _contentOffsetY;
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -490,6 +655,7 @@ namespace ScreenCapture
                 var closeButtonVisibility = CloseButton.Visibility;
                 var minimizeButtonVisibility = MinimizeButton.Visibility;
                 var frameColorPickerVisibility = _frameColorPicker?.Visibility ?? Visibility.Collapsed;
+                var backgroundColorPickerVisibility = _backgroundColorPicker?.Visibility ?? Visibility.Collapsed;
 
                 BorderFrame.Visibility = Visibility.Collapsed;
                 CloseButton.Visibility = Visibility.Collapsed;
@@ -497,6 +663,10 @@ namespace ScreenCapture
                 if (_frameColorPicker != null)
                 {
                     _frameColorPicker.Visibility = Visibility.Collapsed;
+                }
+                if (_backgroundColorPicker != null)
+                {
+                    _backgroundColorPicker.Visibility = Visibility.Collapsed;
                 }
 
                 // UIの更新を待つ
@@ -528,6 +698,10 @@ namespace ScreenCapture
                 if (_frameColorPicker != null)
                 {
                     _frameColorPicker.Visibility = frameColorPickerVisibility;
+                }
+                if (_backgroundColorPicker != null)
+                {
+                    _backgroundColorPicker.Visibility = backgroundColorPickerVisibility;
                 }
 
                 // 選択状態を復元
@@ -877,6 +1051,18 @@ namespace ScreenCapture
             TextStyleSettings.CaptureFrameColor = e.NewValue.Value;
         }
 
+        private void OnBackgroundColorChanged(object? sender, RoutedPropertyChangedEventArgs<WpfColor?> e)
+        {
+            if (e.NewValue == null || _contentLayer == null)
+            {
+                return;
+            }
+
+            var brush = new SolidColorBrush(e.NewValue.Value);
+            _contentLayer.Background = brush;
+            TextStyleSettings.CaptureBackgroundColor = e.NewValue.Value;
+        }
+
         private void OnWindowMouseWheel(object sender, MouseWheelEventArgs e)
         {
             const double step = 0.05;
@@ -1034,6 +1220,7 @@ namespace ScreenCapture
                 var closeButtonVisibility = CloseButton.Visibility;
                 var minimizeButtonVisibility = MinimizeButton.Visibility;
                 var frameColorPickerVisibility = _frameColorPicker?.Visibility ?? Visibility.Collapsed;
+                var backgroundColorPickerVisibility = _backgroundColorPicker?.Visibility ?? Visibility.Collapsed;
 
                 BorderFrame.Visibility = Visibility.Collapsed;
                 CloseButton.Visibility = Visibility.Collapsed;
@@ -1041,6 +1228,10 @@ namespace ScreenCapture
                 if (_frameColorPicker != null)
                 {
                     _frameColorPicker.Visibility = Visibility.Collapsed;
+                }
+                if (_backgroundColorPicker != null)
+                {
+                    _backgroundColorPicker.Visibility = Visibility.Collapsed;
                 }
 
                 // UIの更新を待つ
@@ -1062,40 +1253,28 @@ namespace ScreenCapture
                 var grid = (Grid)Content;
                 renderTarget.Render(grid);
 
-                // 保存ダイアログを表示
-                var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+                // ファイルダイアログを表示して保存先を選択
+                var dialog = new System.Windows.Forms.SaveFileDialog
                 {
-                    Filter = "PNG画像 (*.png)|*.png|JPEG画像 (*.jpg)|*.jpg|BMP画像 (*.bmp)|*.bmp",
-                    DefaultExt = ".png",
-                    FileName = $"ScreenCapture_{DateTime.Now:yyyyMMdd_HHmmss}"
+                    Filter = "PNGファイル (*.png)|*.png|JPEGファイル (*.jpg;*.jpeg)|*.jpg;*.jpeg|全てのファイル (*.*)|*.*",
+                    DefaultExt = "png",
+                    AddExtension = true
                 };
 
-                if (saveFileDialog.ShowDialog() == true)
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    BitmapEncoder encoder;
-                    var extension = System.IO.Path.GetExtension(saveFileDialog.FileName).ToLower();
-                    
-                    if (extension == ".jpg" || extension == ".jpeg")
-                    {
-                        encoder = new JpegBitmapEncoder { QualityLevel = 95 };
-                    }
-                    else if (extension == ".bmp")
-                    {
-                        encoder = new BmpBitmapEncoder();
-                    }
-                    else
-                    {
-                        encoder = new PngBitmapEncoder();
-                    }
+                    // 選択されたファイルパスを取得
+                    string filePath = dialog.FileName;
 
-                    encoder.Frames.Add(BitmapFrame.Create(renderTarget));
-
-                    using (var fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create))
+                    // 画像をファイルに保存
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
+                        var encoder = new PngBitmapEncoder(); // PNG形式で保存
+                        encoder.Frames.Add(BitmapFrame.Create(renderTarget));
                         encoder.Save(fileStream);
                     }
 
-                    MessageBox.Show($"画像を保存しました:\n{saveFileDialog.FileName}", "保存完了", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"画像を保存しました: {filePath}", "保存完了", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
                 // UI要素を復元
@@ -1105,6 +1284,10 @@ namespace ScreenCapture
                 if (_frameColorPicker != null)
                 {
                     _frameColorPicker.Visibility = frameColorPickerVisibility;
+                }
+                if (_backgroundColorPicker != null)
+                {
+                    _backgroundColorPicker.Visibility = backgroundColorPickerVisibility;
                 }
 
                 // 選択状態を復元
@@ -1121,7 +1304,7 @@ namespace ScreenCapture
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存に失敗しました: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"画像の保存に失敗しました: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

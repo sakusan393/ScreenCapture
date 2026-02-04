@@ -11,24 +11,31 @@
         Background="Transparent"
         Loaded="Window_Loaded">
     <Grid>
-        <Grid x:Name="ContentLayer">
-            <!-- 背景：キャプチャ画像 -->
-            <Border Background="Transparent">
-                <Image x:Name="CaptureImage" Stretch="None" Focusable="True"/>
-            </Border>
+        <Grid x:Name="ContentLayer" Background="Black">
+            <Grid x:Name="CaptureContent" HorizontalAlignment="Left" VerticalAlignment="Top">
+                <Border Background="Transparent">
+                    <Image x:Name="CaptureImage" Stretch="None" Focusable="True" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                </Border>
+            </Grid>
 
-            <!-- 前景：テキスト等を載せる -->
             <Canvas x:Name="OverlayCanvas" Background="Transparent" Focusable="True"/>
         </Grid>
 
-        <!-- 枠線：キャプチャエリアを視認できるように半透明の赤い枠 -->
         <Border x:Name="BorderFrame"
                 BorderBrush="#FFFF0000"
                 BorderThickness="5"
                 IsHitTestVisible="False"
                 Opacity="0.25"/>
 
-        <!-- 枠線色変更ボタン（マウスホバー時のみ表示） -->
+        <Thumb x:Name="ResizeTopLeftThumb" Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Top" Cursor="SizeNWSE" Opacity="0"/>
+        <Thumb x:Name="ResizeTopThumb" Height="6" HorizontalAlignment="Stretch" VerticalAlignment="Top" Cursor="SizeNS" Opacity="0"/>
+        <Thumb x:Name="ResizeTopRightThumb" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" Cursor="SizeNESW" Opacity="0"/>
+        <Thumb x:Name="ResizeLeftThumb" Width="6" HorizontalAlignment="Left" VerticalAlignment="Stretch" Cursor="SizeWE" Opacity="0"/>
+        <Thumb x:Name="ResizeRightThumb" Width="6" HorizontalAlignment="Right" VerticalAlignment="Stretch" Cursor="SizeWE" Opacity="0"/>
+        <Thumb x:Name="ResizeBottomLeftThumb" Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Bottom" Cursor="SizeNESW" Opacity="0"/>
+        <Thumb x:Name="ResizeBottomThumb" Height="6" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Cursor="SizeNS" Opacity="0"/>
+        <Thumb x:Name="ResizeBottomRightThumb" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Bottom" Cursor="SizeNWSE" Opacity="0"/>
+
         <xctk:ColorPicker x:Name="FrameColorPicker"
                           Width="60"
                           Height="30"
@@ -40,7 +47,17 @@
                           UsingAlphaChannel="True"
                           ToolTip="枠線の色を変更"/>
 
-        <!-- 最小化ボタン（マウスホバー時のみ表示） -->
+        <xctk:ColorPicker x:Name="BackgroundColorPicker"
+                          Width="60"
+                          Height="30"
+                          Margin="0,5,145,0"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Top"
+                          Visibility="Collapsed"
+                          Panel.ZIndex="1000"
+                          UsingAlphaChannel="True"
+                          ToolTip="背景色を変更"/>
+
         <Button x:Name="MinimizeButton"
                 Width="30" Height="30"
                 Content="—"
@@ -73,7 +90,6 @@
             </Button.Template>
         </Button>
 
-        <!-- 閉じるボタン（マウスホバー時のみ表示） -->
         <Button x:Name="CloseButton"
                 Width="30" Height="30"
                 Content="×"

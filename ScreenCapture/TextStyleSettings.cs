@@ -26,6 +26,7 @@ namespace ScreenCapture
             public double PaintThickness { get; set; } = 3;
             public uint ImageBorderColorArgb { get; set; } = 0xFFFFFFFF;
             public uint CaptureFrameColorArgb { get; set; } = 0xFFFF0000;
+            public uint CaptureBackgroundColorArgb { get; set; } = 0xFF000000;
         }
 
         private static Data _data = Load();
@@ -86,6 +87,16 @@ namespace ScreenCapture
             set
             {
                 _data.CaptureFrameColorArgb = ToArgb(value);
+                Save();
+            }
+        }
+
+        public static MediaColor CaptureBackgroundColor
+        {
+            get => FromArgb(_data.CaptureBackgroundColorArgb, Colors.Black);
+            set
+            {
+                _data.CaptureBackgroundColorArgb = ToArgb(value);
                 Save();
             }
         }
