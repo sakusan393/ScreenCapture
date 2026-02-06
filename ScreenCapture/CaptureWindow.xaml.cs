@@ -1127,6 +1127,8 @@ namespace ScreenCapture
         {
             if (!_isPaintMode) return;
 
+            ClearTextFocus();
+
             if (_isArrowMode)
             {
                 StartArrowDrawing(e.GetPosition(OverlayCanvas));
