@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -22,9 +23,7 @@ namespace ScreenCapture
 {
     public partial class CaptureWindow : Window
     {
-        private const int PaintZIndex = 0;
-        private const int ImageZIndexBase = 1000;
-        private const int TextZIndexBase = 2000;
+        private const int LayerZIndexStep = 1000;
         private DraggableText? _selectedText;
         private DraggableImage? _selectedImage;
         private bool _isDraggingWindow;
@@ -62,12 +61,38 @@ namespace ScreenCapture
         private Stack<List<UIElement>> _redoStack = new Stack<List<UIElement>>();
         private int _undoLimit = 50;
         private List<UIElement> _currentStroke = new List<UIElement>();
-        private int _imageZIndex = ImageZIndexBase;
-        private int _textZIndex = TextZIndexBase;
+        private int _paintZIndexBase;
+        private int _imageZIndexBase;
+        private int _textZIndexBase;
+        private int _imageZIndex;
+        private int _textZIndex;
+        private ObservableCollection<LayerGroupItem> _layerGroups = new ObservableCollection<LayerGroupItem>();
+        private WpfPoint _layerDragStartPoint;
+
+        private sealed class LayerGroupItem
+        {
+            public LayerGroupItem(string displayName, LayerGroupType type)
+            {
+                DisplayName = displayName;
+                Type = type;
+            }
+
+            public string DisplayName { get; }
+            public LayerGroupType Type { get; }
+        }
+
+        private enum LayerGroupType
+        {
+            Paint,
+            Images,
+            Text
+        }
 
         public CaptureWindow(BitmapSource image, System.Drawing.Point screenLocation)
         {
             InitializeComponent();
+
+            InitializeLayerOrder();
 
             _contentLayer = FindName("ContentLayer") as Grid;
             _captureContent = FindName("CaptureContent") as Grid;
@@ -111,7 +136,6 @@ namespace ScreenCapture
                     _backgroundColorPicker.SelectedColorChanged += OnBackgroundColorChanged;
                 }
             }
-
             InitializeResizeHandles();
 
             MouseWheel += OnWindowMouseWheel;
@@ -214,6 +238,218 @@ namespace ScreenCapture
             {
                 _paintToolbarWindow?.Close();
                 _paintToolbarWindow = null;
+            };
+        }
+
+        private void InitializeLayerOrder()
+        {
+            _layerGroups = new ObservableCollection<LayerGroupItem>();
+            foreach (var type in GetOrderedLayerTypes())
+            {
+                _layerGroups.Add(new LayerGroupItem(GetDisplayName(type), type));
+            }
+
+            if (FindName("LayerOrderListBox") is System.Windows.Controls.ListBox listBox)
+            {
+                listBox.ItemsSource = _layerGroups;
+                listBox.PreviewMouseLeftButtonDown += LayerOrderListBox_PreviewMouseLeftButtonDown;
+                listBox.MouseMove += LayerOrderListBox_MouseMove;
+                listBox.Drop += LayerOrderListBox_Drop;
+            }
+
+            ApplyLayerOrder();
+        }
+
+        private static IReadOnlyList<LayerGroupType> GetOrderedLayerTypes()
+        {
+            var ordered = new List<LayerGroupType>();
+            foreach (var value in TextStyleSettings.LayerOrder)
+            {
+                if (Enum.IsDefined(typeof(LayerGroupType), value))
+                {
+                    var type = (LayerGroupType)value;
+                    if (!ordered.Contains(type))
+                    {
+                        ordered.Add(type);
+                    }
+                }
+            }
+
+            foreach (var fallback in new[] { LayerGroupType.Paint, LayerGroupType.Images, LayerGroupType.Text })
+            {
+                if (!ordered.Contains(fallback))
+                {
+                    ordered.Add(fallback);
+                }
+            }
+
+            return ordered;
+        }
+
+        private static string GetDisplayName(LayerGroupType type)
+        {
+            return type switch
+            {
+                LayerGroupType.Paint => "Paint",
+                LayerGroupType.Images => "Images",
+                LayerGroupType.Text => "Text",
+                _ => type.ToString()
+            };
+        }
+
+        private void LayerOrderListBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _layerDragStartPoint = e.GetPosition(null);
+        }
+
+        private void LayerOrderListBox_MouseMove(object sender, WpfMouseEventArgs e)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed)
+            {
+                return;
+            }
+
+            var position = e.GetPosition(null);
+            if (Math.Abs(position.X - _layerDragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance
+                && Math.Abs(position.Y - _layerDragStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+            {
+                return;
+            }
+
+            if (sender is not System.Windows.Controls.ListBox listBox)
+            {
+                return;
+            }
+
+            var listBoxItem = GetListBoxItemAtPoint(listBox, e.GetPosition(listBox));
+            if (listBoxItem?.DataContext is not LayerGroupItem item)
+            {
+                return;
+            }
+
+            DragDrop.DoDragDrop(listBoxItem, item, System.Windows.DragDropEffects.Move);
+        }
+
+        private void LayerOrderListBox_Drop(object sender, System.Windows.DragEventArgs e)
+        {
+            if (sender is not System.Windows.Controls.ListBox listBox)
+            {
+                return;
+            }
+
+            if (!e.Data.GetDataPresent(typeof(LayerGroupItem)))
+            {
+                return;
+            }
+
+            var sourceItem = (LayerGroupItem)e.Data.GetData(typeof(LayerGroupItem))!;
+            var targetItemContainer = GetListBoxItemAtPoint(listBox, e.GetPosition(listBox));
+            if (targetItemContainer?.DataContext is not LayerGroupItem targetItem)
+            {
+                return;
+            }
+
+            if (ReferenceEquals(sourceItem, targetItem))
+            {
+                return;
+            }
+
+            var sourceIndex = _layerGroups.IndexOf(sourceItem);
+            var targetIndex = _layerGroups.IndexOf(targetItem);
+            if (sourceIndex < 0 || targetIndex < 0)
+            {
+                return;
+            }
+
+            _layerGroups.Move(sourceIndex, targetIndex);
+            ApplyLayerOrder();
+            SaveLayerOrder();
+        }
+
+        private void SaveLayerOrder()
+        {
+            TextStyleSettings.LayerOrder = _layerGroups.Select(item => (int)item.Type).ToArray();
+        }
+
+        private static ListBoxItem? GetListBoxItemAtPoint(System.Windows.Controls.ListBox listBox, WpfPoint point)
+        {
+            var element = listBox.InputHitTest(point) as DependencyObject;
+            while (element != null && element is not ListBoxItem)
+            {
+                element = VisualTreeHelper.GetParent(element);
+            }
+
+            return element as ListBoxItem;
+        }
+
+        private void ApplyLayerOrder()
+        {
+            var previousPaintBase = _paintZIndexBase;
+            var previousImageBase = _imageZIndexBase;
+            var previousTextBase = _textZIndexBase;
+
+            for (var index = 0; index < _layerGroups.Count; index++)
+            {
+                var baseIndex = (_layerGroups.Count - 1 - index) * LayerZIndexStep;
+                switch (_layerGroups[index].Type)
+                {
+                    case LayerGroupType.Paint:
+                        _paintZIndexBase = baseIndex;
+                        break;
+                    case LayerGroupType.Images:
+                        _imageZIndexBase = baseIndex;
+                        break;
+                    case LayerGroupType.Text:
+                        _textZIndexBase = baseIndex;
+                        break;
+                }
+            }
+
+            ReindexGroup(LayerGroupType.Paint, previousPaintBase, _paintZIndexBase);
+            ReindexGroup(LayerGroupType.Images, previousImageBase, _imageZIndexBase);
+            ReindexGroup(LayerGroupType.Text, previousTextBase, _textZIndexBase);
+        }
+
+        private void ReindexGroup(LayerGroupType type, int previousBase, int newBase)
+        {
+            if (OverlayCanvas == null)
+            {
+                return;
+            }
+
+            var maxOffset = 0;
+            foreach (UIElement child in OverlayCanvas.Children)
+            {
+                if (!IsLayerGroupChild(type, child))
+                {
+                    continue;
+                }
+
+                var oldIndex = System.Windows.Controls.Panel.GetZIndex(child);
+                var offset = Math.Max(0, oldIndex - previousBase);
+                System.Windows.Controls.Panel.SetZIndex(child, newBase + offset);
+                maxOffset = Math.Max(maxOffset, offset);
+            }
+
+            switch (type)
+            {
+                case LayerGroupType.Images:
+                    _imageZIndex = newBase + maxOffset;
+                    break;
+                case LayerGroupType.Text:
+                    _textZIndex = newBase + maxOffset;
+                    break;
+            }
+        }
+
+        private static bool IsLayerGroupChild(LayerGroupType type, UIElement child)
+        {
+            return type switch
+            {
+                LayerGroupType.Paint => child is Line,
+                LayerGroupType.Images => child is DraggableImage,
+                LayerGroupType.Text => child is DraggableText,
+                _ => false
             };
         }
 
@@ -533,6 +769,7 @@ namespace ScreenCapture
             var di = new DraggableImage(image);
             Canvas.SetLeft(di, p.X);
             Canvas.SetTop(di, p.Y);
+            System.Windows.Controls.Panel.SetZIndex(di, ++_imageZIndex);
 
             // クリックで選択状態にする
             di.PreviewMouseLeftButtonDown += (s, e) =>
@@ -608,6 +845,7 @@ namespace ScreenCapture
             var dt = new DraggableText();
             Canvas.SetLeft(dt, p.X);
             Canvas.SetTop(dt, p.Y);
+            System.Windows.Controls.Panel.SetZIndex(dt, ++_textZIndex);
 
             // 選択中のテキストのスタイルを引き継ぐ（色変更後に追加した場合）
             if (_selectedText != null)
@@ -697,10 +935,12 @@ namespace ScreenCapture
                 var minimizeButtonVisibility = MinimizeButton.Visibility;
                 var frameColorPickerVisibility = _frameColorPicker?.Visibility ?? Visibility.Collapsed;
                 var backgroundColorPickerVisibility = _backgroundColorPicker?.Visibility ?? Visibility.Collapsed;
+                var layerOrderPanelVisibility = LayerOrderPanel.Visibility;
 
                 BorderFrame.Visibility = Visibility.Collapsed;
                 CloseButton.Visibility = Visibility.Collapsed;
                 MinimizeButton.Visibility = Visibility.Collapsed;
+                LayerOrderPanel.Visibility = Visibility.Collapsed;
                 if (_frameColorPicker != null)
                 {
                     _frameColorPicker.Visibility = Visibility.Collapsed;
@@ -736,6 +976,7 @@ namespace ScreenCapture
                 BorderFrame.Visibility = borderFrameVisibility;
                 CloseButton.Visibility = closeButtonVisibility;
                 MinimizeButton.Visibility = minimizeButtonVisibility;
+                LayerOrderPanel.Visibility = layerOrderPanelVisibility;
                 if (_frameColorPicker != null)
                 {
                     _frameColorPicker.Visibility = frameColorPickerVisibility;
@@ -961,7 +1202,7 @@ namespace ScreenCapture
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round
             };
-            System.Windows.Controls.Panel.SetZIndex(line, PaintZIndex);
+            System.Windows.Controls.Panel.SetZIndex(line, _paintZIndexBase);
 
             OverlayCanvas.Children.Add(line);
 
@@ -1133,9 +1374,9 @@ namespace ScreenCapture
             _arrowHeadLeft = CreateArrowLine(point, point, stroke);
             _arrowHeadRight = CreateArrowLine(point, point, stroke);
 
-            System.Windows.Controls.Panel.SetZIndex(_arrowLine, PaintZIndex);
-            System.Windows.Controls.Panel.SetZIndex(_arrowHeadLeft, PaintZIndex);
-            System.Windows.Controls.Panel.SetZIndex(_arrowHeadRight, PaintZIndex);
+            System.Windows.Controls.Panel.SetZIndex(_arrowLine, _paintZIndexBase);
+            System.Windows.Controls.Panel.SetZIndex(_arrowHeadLeft, _paintZIndexBase);
+            System.Windows.Controls.Panel.SetZIndex(_arrowHeadRight, _paintZIndexBase);
 
             _arrowElements = new List<UIElement> { _arrowLine, _arrowHeadLeft, _arrowHeadRight };
 
@@ -1269,10 +1510,12 @@ namespace ScreenCapture
                 var minimizeButtonVisibility = MinimizeButton.Visibility;
                 var frameColorPickerVisibility = _frameColorPicker?.Visibility ?? Visibility.Collapsed;
                 var backgroundColorPickerVisibility = _backgroundColorPicker?.Visibility ?? Visibility.Collapsed;
+                var layerOrderPanelVisibility = LayerOrderPanel.Visibility;
 
                 BorderFrame.Visibility = Visibility.Collapsed;
                 CloseButton.Visibility = Visibility.Collapsed;
                 MinimizeButton.Visibility = Visibility.Collapsed;
+                LayerOrderPanel.Visibility = Visibility.Collapsed;
                 if (_frameColorPicker != null)
                 {
                     _frameColorPicker.Visibility = Visibility.Collapsed;
@@ -1329,6 +1572,7 @@ namespace ScreenCapture
                 BorderFrame.Visibility = borderFrameVisibility;
                 CloseButton.Visibility = closeButtonVisibility;
                 MinimizeButton.Visibility = minimizeButtonVisibility;
+                LayerOrderPanel.Visibility = layerOrderPanelVisibility;
                 if (_frameColorPicker != null)
                 {
                     _frameColorPicker.Visibility = frameColorPickerVisibility;

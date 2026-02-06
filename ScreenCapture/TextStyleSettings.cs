@@ -27,6 +27,7 @@ namespace ScreenCapture
             public uint ImageBorderColorArgb { get; set; } = 0xFFFFFFFF;
             public uint CaptureFrameColorArgb { get; set; } = 0xFFFF0000;
             public uint CaptureBackgroundColorArgb { get; set; } = 0xFF000000;
+            public int[] LayerOrder { get; set; } = { 0, 1, 2 };
         }
 
         private static Data _data = Load();
@@ -97,6 +98,16 @@ namespace ScreenCapture
             set
             {
                 _data.CaptureBackgroundColorArgb = ToArgb(value);
+                Save();
+            }
+        }
+
+        public static int[] LayerOrder
+        {
+            get => _data.LayerOrder ?? new[] { 0, 1, 2 };
+            set
+            {
+                _data.LayerOrder = value ?? new[] { 0, 1, 2 };
                 Save();
             }
         }

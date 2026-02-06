@@ -121,5 +121,49 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
+
+        <Border x:Name="LayerOrderPanel"
+                Background="#CC000000"
+                CornerRadius="6"
+                Padding="6"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Margin="10"
+                Panel.ZIndex="3000">
+            <Expander Header="Layers"
+                      Foreground="White"
+                      IsExpanded="False">
+                <ListBox x:Name="LayerOrderListBox"
+                         Width="80"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Foreground="White"
+                         AllowDrop="True">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Cursor" Value="SizeAll"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#FF333333"
+                                    CornerRadius="4"
+                                    Padding="4"
+                                    Margin="0,2,0,2">
+                                <DockPanel LastChildFill="True">
+                                    <TextBlock Text="≡"
+                                               Foreground="#FFBFBFBF"
+                                               FontSize="12"
+                                               Margin="0,0,4,0"
+                                               VerticalAlignment="Center"
+                                               DockPanel.Dock="Left" />
+                                    <TextBlock Text="{Binding DisplayName}" />
+                                </DockPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Expander>
+        </Border>
     </Grid>
 </Window>
