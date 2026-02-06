@@ -22,6 +22,9 @@ namespace ScreenCapture
 {
     public partial class CaptureWindow : Window
     {
+        private const int PaintZIndex = 0;
+        private const int ImageZIndexBase = 1000;
+        private const int TextZIndexBase = 2000;
         private DraggableText? _selectedText;
         private DraggableImage? _selectedImage;
         private bool _isDraggingWindow;
@@ -59,6 +62,8 @@ namespace ScreenCapture
         private Stack<List<UIElement>> _redoStack = new Stack<List<UIElement>>();
         private int _undoLimit = 50;
         private List<UIElement> _currentStroke = new List<UIElement>();
+        private int _imageZIndex = ImageZIndexBase;
+        private int _textZIndex = TextZIndexBase;
 
         public CaptureWindow(BitmapSource image, System.Drawing.Point screenLocation)
         {
@@ -661,11 +666,13 @@ namespace ScreenCapture
         // 要素を最前面に移動
         private void BringToFront(UIElement element)
         {
-            // Canvasから一度削除して、最後に追加し直すことで最前面に移動
-            if (OverlayCanvas.Children.Contains(element))
+            if (element is DraggableText)
             {
-                OverlayCanvas.Children.Remove(element);
-                OverlayCanvas.Children.Add(element);
+                System.Windows.Controls.Panel.SetZIndex(element, ++_textZIndex);
+            }
+            else if (element is DraggableImage)
+            {
+                System.Windows.Controls.Panel.SetZIndex(element, ++_imageZIndex);
             }
         }
 
@@ -791,6 +798,7 @@ namespace ScreenCapture
 
             if (_isPaintMode)
             {
+                ClearTextFocus();
                 _paintToolbarWindow?.Show();
                 UpdateToolbarPosition();
                 Activate();
@@ -824,6 +832,7 @@ namespace ScreenCapture
                 OverlayCanvas.Cursor = isEnabled ? Cursors.UpArrow : Cursors.Pen;
             }
         }
+
 
         private static bool IsCtrlKeyPressed(WpfKeyEventArgs e)
         {
@@ -952,6 +961,7 @@ namespace ScreenCapture
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round
             };
+            System.Windows.Controls.Panel.SetZIndex(line, PaintZIndex);
 
             OverlayCanvas.Children.Add(line);
 
@@ -1122,6 +1132,10 @@ namespace ScreenCapture
             _arrowLine = CreateArrowLine(point, point, stroke);
             _arrowHeadLeft = CreateArrowLine(point, point, stroke);
             _arrowHeadRight = CreateArrowLine(point, point, stroke);
+
+            System.Windows.Controls.Panel.SetZIndex(_arrowLine, PaintZIndex);
+            System.Windows.Controls.Panel.SetZIndex(_arrowHeadLeft, PaintZIndex);
+            System.Windows.Controls.Panel.SetZIndex(_arrowHeadRight, PaintZIndex);
 
             _arrowElements = new List<UIElement> { _arrowLine, _arrowHeadLeft, _arrowHeadRight };
 
