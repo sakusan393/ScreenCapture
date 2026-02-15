@@ -1,6 +1,6 @@
 # ScreenCapture
 
-画面キャプチャ＋注釈ツール - Rapture風のスクリーンキャプチャアプリケーション
+画面キャプチャ＋テキストによる注釈＋別画像追加＋ペイント機能を備えたWindows用のキャプチャツールです。
 
 [![Release](https://img.shields.io/github/v/release/sakusan393/ScreenCapture)](https://github.com/sakusan393/ScreenCapture/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/sakusan393/ScreenCapture/total)](https://github.com/sakusan393/ScreenCapture/releases)
