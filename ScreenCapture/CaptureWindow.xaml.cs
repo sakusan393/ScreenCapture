@@ -258,6 +258,7 @@ namespace ScreenCapture
             }
 
             ApplyLayerOrder();
+            UpdatePaintLayerHitTesting();
         }
 
         private static IReadOnlyList<LayerGroupType> GetOrderedLayerTypes()
@@ -364,6 +365,7 @@ namespace ScreenCapture
             _layerGroups.Move(sourceIndex, targetIndex);
             ApplyLayerOrder();
             SaveLayerOrder();
+            UpdatePaintLayerHitTesting();
         }
 
         private void SaveLayerOrder()
@@ -408,6 +410,29 @@ namespace ScreenCapture
             ReindexGroup(LayerGroupType.Paint, previousPaintBase, _paintZIndexBase);
             ReindexGroup(LayerGroupType.Images, previousImageBase, _imageZIndexBase);
             ReindexGroup(LayerGroupType.Text, previousTextBase, _textZIndexBase);
+        }
+
+        private void UpdatePaintLayerHitTesting()
+        {
+            if (OverlayCanvas == null)
+            {
+                return;
+            }
+
+            var paintAboveImages = _isPaintMode && _paintZIndexBase > _imageZIndexBase;
+            var paintAboveText = _isPaintMode && _paintZIndexBase > _textZIndexBase;
+
+            foreach (UIElement child in OverlayCanvas.Children)
+            {
+                if (child is DraggableImage image)
+                {
+                    image.IsHitTestVisible = !paintAboveImages;
+                }
+                else if (child is DraggableText text)
+                {
+                    text.IsHitTestVisible = !paintAboveText;
+                }
+            }
         }
 
         private void ReindexGroup(LayerGroupType type, int previousBase, int newBase)
@@ -770,6 +795,7 @@ namespace ScreenCapture
             Canvas.SetLeft(di, p.X);
             Canvas.SetTop(di, p.Y);
             System.Windows.Controls.Panel.SetZIndex(di, ++_imageZIndex);
+            di.IsHitTestVisible = !(_isPaintMode && _paintZIndexBase > _imageZIndexBase);
 
             // クリックで選択状態にする
             di.PreviewMouseLeftButtonDown += (s, e) =>
@@ -846,6 +872,7 @@ namespace ScreenCapture
             Canvas.SetLeft(dt, p.X);
             Canvas.SetTop(dt, p.Y);
             System.Windows.Controls.Panel.SetZIndex(dt, ++_textZIndex);
+            dt.IsHitTestVisible = !(_isPaintMode && _paintZIndexBase > _textZIndexBase);
 
             // 選択中のテキストのスタイルを引き継ぐ（色変更後に追加した場合）
             if (_selectedText != null)
@@ -1045,6 +1072,7 @@ namespace ScreenCapture
                 Activate();
                 Focus();
                 OverlayCanvas.Cursor = Cursors.Pen;
+                UpdatePaintLayerHitTesting();
             }
             else
             {
@@ -1054,6 +1082,7 @@ namespace ScreenCapture
                 OverlayCanvas.Cursor = Cursors.Arrow;
                 _isPainting = false;
                 CancelArrowDrawing();
+                UpdatePaintLayerHitTesting();
             }
         }
 
