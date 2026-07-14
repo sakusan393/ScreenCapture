@@ -32,6 +32,7 @@ namespace ScreenCapture
 
             var textColor = TextStyleSettings.TextColor;
             var backgroundColor = TextStyleSettings.BackgroundColor;
+            var fontSize = TextStyleSettings.TextFontSize;
             
             TextColorPicker.SelectedColor = textColor;
             TextColorPicker.SelectedColorChanged += OnTextColorChanged;
@@ -39,7 +40,7 @@ namespace ScreenCapture
             TextBackgroundPicker.SelectedColor = backgroundColor;
             TextBackgroundPicker.SelectedColorChanged += OnBackgroundColorChanged;
             
-            SetStyle(TextBox.FontSize, textColor, backgroundColor);
+            SetStyle(fontSize, textColor, backgroundColor);
             
             // 編集中はドラッグ無効（入力を優先）
             TextBox.GotFocus += (_, __) =>
@@ -172,6 +173,7 @@ namespace ScreenCapture
             
             TextStyleSettings.TextColor = color;
             TextStyleSettings.BackgroundColor = backgroundColor;
+            TextStyleSettings.TextFontSize = fontSize;
         }
 
         public double GetFontSize() => TextBox.FontSize;
@@ -243,4 +245,3 @@ namespace ScreenCapture
         }
     }
 }
-

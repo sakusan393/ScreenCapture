@@ -9,6 +9,9 @@ namespace ScreenCapture
     internal static class TextStyleSettings
     {
         private const string SettingsFileName = "text-style.json";
+        private const double DefaultTextFontSize = 28;
+        private const double MinTextFontSize = 8;
+        private const double MaxTextFontSize = 200;
         private static readonly string SettingsDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "ScreenCapture");
@@ -22,6 +25,7 @@ namespace ScreenCapture
         {
             public uint TextColorArgb { get; set; } = 0xFFFF0000;
             public uint BackgroundColorArgb { get; set; } = 0x00000000;
+            public double TextFontSize { get; set; } = DefaultTextFontSize;
             public uint PaintColorArgb { get; set; } = 0xFFFF0000;
             public double PaintThickness { get; set; } = 3;
             public uint ImageBorderColorArgb { get; set; } = 0xFFFFFFFF;
@@ -48,6 +52,26 @@ namespace ScreenCapture
             set
             {
                 _data.BackgroundColorArgb = ToArgb(value);
+                Save();
+            }
+        }
+
+        public static double TextFontSize
+        {
+            get
+            {
+                var fontSize = _data.TextFontSize;
+                return double.IsFinite(fontSize)
+                    && fontSize >= MinTextFontSize
+                    && fontSize <= MaxTextFontSize
+                        ? fontSize
+                        : DefaultTextFontSize;
+            }
+            set
+            {
+                _data.TextFontSize = double.IsFinite(value)
+                    ? Math.Clamp(value, MinTextFontSize, MaxTextFontSize)
+                    : DefaultTextFontSize;
                 Save();
             }
         }
