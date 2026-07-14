@@ -1,133 +1,138 @@
 # ScreenCapture
 
-��ʃL���v�`���{�e�L�X�g�ɂ�钍�߁{�ʉ摜�ǉ��{�y�C���g�@�\�������Windows�p�̃L���v�`���c�[���ł��B
+画面キャプチャ＋テキストによる注釈＋別画像追加＋ペイント機能を備えたWindows用のキャプチャツールです。
 
 [![Release](https://img.shields.io/github/v/release/sakusan393/ScreenCapture)](https://github.com/sakusan393/ScreenCapture/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/sakusan393/ScreenCapture/total)](https://github.com/sakusan393/ScreenCapture/releases)
 [![License](https://img.shields.io/github/license/sakusan393/ScreenCapture)](LICENSE)
 
-## ��ȋ@�\
+## 主な機能
 
-### ��ʃL���v�`��
-- �h���b�O�Ŕ͈͂�I�����ăL���v�`��
-- **Ctrl+�N���b�N**�ŃN���b�N�����E�B���h�E���L���v�`��
-- �������j�^�[�Ή�
-- **Ctrl+C**�ŃN���b�v�{�[�h�ɃR�s�[
-- **Ctrl+S**�ŉ摜�Ƃ��ĕۑ��iPNG/JPEG/BMP�j
+### 画面キャプチャ
+- ドラッグで範囲を選択してキャプチャ
+- **Ctrl+クリック**でクリックしたウィンドウをキャプチャ
+- 複数モニター対応
+- **Ctrl+C**でクリップボードにコピー
+- **Ctrl+S**で画像として保存（現在の実装はPNGエンコード）
 
-### �e�L�X�g����
-- �E�N���b�N�Ńe�L�X�g��ǉ�
-- **�J���[�s�b�J�[**�ŕ����F��I���i�����x�Ή��j
-- **�w�i�F**���J���[�s�b�J�[�őI���i�����x�Ή��j
-- **�T�C�Y�ύX**�� [+][-] �{�^���A�܂��͉������ςȂ��ŘA���ύX
-- �_�u���N���b�N�ōĕҏW
-- �h���b�O�ňړ�
-- �F�ݒ�͎���N�������ێ�
+### テキスト注釈
+- 右クリックでテキストを追加
+- **カラーピッカー**で文字色を選択（透明度対応）
+- **背景色**をカラーピッカーで選択（透明度対応）
+- **サイズ変更**は [+][-] ボタン、または押しっぱなしで連続変更
+- ダブルクリックで再編集
+- ドラッグで移動
+- 文字色・背景色・文字サイズの設定は次回起動時も保持
 
-### �摜�̓\��t��
-- **Ctrl+V**�ŃN���b�v�{�[�h����摜��ǉ�
-- ���T�C�Y�͎l���̃n���h�����h���b�O�iShift�ŃA�X�y�N�g��Œ�j
-- ��]�͏㕔�����̃n���h�����h���b�O
-- �h���b�O�ňړ�
-- �g���\����ON/OFF�؂�ւ��i10px/20px�j
-- �g���F���J���[�s�b�J�[�ŕύX�i�����x�Ή��j
+### 画像の貼り付け
+- **Ctrl+V**でクリップボードから画像を追加
+- リサイズは四隅のハンドルをドラッグ（Shiftでアスペクト比固定）
+- 回転は上部中央のハンドルをドラッグ
+- ドラッグで移動
+- 枠線表示のON/OFF切り替え（10px/20px）
+- 枠線色をカラーピッカーで変更（透明度対応）
 
-### �y�C���g�@�\
-- **Alt**�L�[�Ńy�C���g���[�h ON/OFF
-- �E�N���b�N���j���[������y�C���g���[�h�؂�ւ�
-- **�J���[�s�b�J�[**�ŐF��I���i�����x�Ή��j
-- **4�i�K�̑���**�i1, 3, 5, 10�j��I��
-- **Shift+�h���b�O**�Ő����E�����̒���
-- **Ctrl+�h���b�O**�Ŗ�󃂁[�h�i�J�[�\������������ɕω��j
-- **Ctrl+Z**�ŃA���h�D
-- **Ctrl+Y**�Ń��h�D
-- **������**�� 10/20/50/100 �񂩂�I��
-- �y�C���g�ݒ�͎���N�������ێ�
+### ペイント機能
+- **Alt**キーでペイントモード ON/OFF
+- 右クリックメニューからもペイントモード切り替え
+- **カラーピッカー**で色を選択（透明度対応）
+- **4段階の太さ**（1, 3, 5, 10）を選択
+- **Shift+ドラッグ**で水平・垂直の直線
+- **Ctrl+ドラッグ**で矢印モード（カーソルが上向き矢印に変化）
+- **Ctrl+Z**でアンドゥ
+- **Ctrl+Y**でリドゥ
+- **履歴回数**は 10/20/50/100 回から選択
+- ペイント設定は次回起動時も保持
 
-### ���̑�
-- �}�E�X�z�o�[�Řg���E�{�^����\��
-- �g���F���J���[�s�b�J�[�ŕύX�i�����x�Ή��j
-- �L���v�`���E�B���h�E�̔w�i�F���J���[�s�b�J�[�ŕύX
-- �l�ӁE�l�����h���b�O���ăG���A���g���i�g�����͔w�i�F�œh��Ԃ��j
-- �����̗v�f��I������ƍőO�ʂɈړ�
-- **Layers** �p�l���Ńy�C���g/�摜/�e�L�X�g�̃��C���[�����h���b�O�ŕύX�i�����͕ێ�����A�ۑ�/�R�s�[�ɂ͊܂܂�܂���j
-- �y�C���g���[�h�Ńy�C���g���C���[���摜/�e�L�X�g����̏ꍇ�A�`�悪�D�悳��܂�
-- **Esc**�L�[�ŏI��
-- �ŏ���
-- **�}�E�X�z�C�[��**�ŃL���v�`���E�B���h�E�̓����x��ύX�i�قڊ��S�����܂ŉ\�j
+### その他
+- マウスホバーで枠線・ボタンを表示
+- 枠線色をカラーピッカーで変更（透明度対応）
+- キャプチャウィンドウの背景色をカラーピッカーで変更
+- 四辺・四隅をドラッグしてエリアを拡張（拡張分は背景色で塗りつぶし）
+- 複数の要素を選択すると最前面に移動
+- **Layers** パネルでペイント/画像/テキストのレイヤー順をドラッグで変更（順序は保持され、保存/コピーには含まれません）
+- ペイントモードでペイントレイヤーが画像/テキストより上の場合、描画が優先されます
+- **Esc**キーで終了
+- 最小化
+- **マウスホイール**でキャプチャウィンドウの透明度を変更（ほぼ完全透明まで可能）
 
-## �g����
+## 使い方
 
-1. **ScreenCapture.exe**���_�u���N���b�N���ċN��
-2. �}�E�X�h���b�O�Ŕ͈͂�I�����ăL���v�`��
-3. �E�N���b�N�Łu�e�L�X�g�ǉ��v�A�܂��� **Alt** �Ńy�C���g���[�h
-4. **Ctrl+C** �ŃN���b�v�{�[�h�ɃR�s�[
-5. Word/PowerPoint�Ȃǂɓ\��t��
+1. **ScreenCapture.exe**をダブルクリックして起動
+2. マウスドラッグで範囲を選択してキャプチャ
+3. 右クリックで「テキスト追加」、または **Alt** でペイントモード
+4. **Ctrl+C** でクリップボードにコピー
+5. Word/PowerPointなどに貼り付け
 
-## �V���[�g�J�b�g�L�[
+## ショートカットキー
 
-| �L�[ | �@�\ |
+| キー | 機能 |
 |------|------|
-| **Ctrl+C** | �N���b�v�{�[�h�ɃR�s�[ |
-| **Ctrl+S** | �摜�Ƃ��ĕۑ� |
-| **Ctrl+V** | �摜��\��t�� |
-| **Ctrl+�N���b�N�i�L���v�`���͈͑I�𒆁j** | �N���b�N�����E�B���h�E���L���v�`�� |
-| **Alt** | �y�C���g���[�h ON/OFF |
-| **Ctrl�i�y�C���g���j** | ��󃂁[�h ON/OFF |
-| **Shift+�h���b�O�i�y�C���g���j** | �����E������ |
-| **Shift+�h���b�O�i�摜���T�C�Y���j** | �A�X�y�N�g��Œ� |
-| **Ctrl+Z** | �A���h�D |
-| **Ctrl+Y** | ���h�D |
-| **�}�E�X�z�C�[��** | �����x�ύX |
-| **Esc** | �I�� |
+| **Ctrl+C** | クリップボードにコピー |
+| **Ctrl+S** | 画像として保存 |
+| **Ctrl+V** | 画像を貼り付け |
+| **Ctrl+クリック（キャプチャ範囲選択中）** | クリックしたウィンドウをキャプチャ |
+| **Alt** | ペイントモード ON/OFF |
+| **Ctrl（ペイント中）** | 矢印モード ON/OFF |
+| **Shift+ドラッグ（ペイント中）** | 水平・垂直線 |
+| **Shift+ドラッグ（画像リサイズ中）** | アスペクト比固定 |
+| **Ctrl+Z** | アンドゥ |
+| **Ctrl+Y** | リドゥ |
+| **マウスホイール** | 透明度変更 |
+| **Esc** | 終了 |
 
-## �z�b�g�L�[�ݒ�
+## ホットキー設定
 
-- �^�X�N�g���C�i�ʒm�̈�j�̃A�C�R�����E�N���b�N
-- **Hotkey Settings...** ����z�b�g�L�[��L�����E�ύX
-- �z�b�g�L�[�L�����͐ݒ肵���L�[�ŃL���v�`�����N��
+- タスクトレイ（通知領域）のアイコンを右クリック
+- **Hotkey Settings...** からホットキーを有効化・変更
+- ホットキー有効時は設定したキーでキャプチャを起動
 
-## �Z�p�X�^�b�N
+## 技術スタック
 
 - .NET 8.0
 - WPF (Windows Presentation Foundation)
 - C#
-- Extended WPF Toolkit (�J���[�s�b�J�[)
+- Extended WPF Toolkit (カラーピッカー)
 
-## �J����
+## 開発環境
 
 - Visual Studio 2022
 - Windows 10/11
 
-## �r���h���@
+## 開発者向けドキュメント
+
+- [Codex 作業ガイド](AGENTS.md): Codex が変更時に守るルールと確認事項
+- [開発ガイド](DEVELOPMENT.md): セットアップ、ブランチ運用、ビルド、手動回帰項目
+- [アーキテクチャ](docs/ARCHITECTURE.md): 実行フロー、座標、レイヤー、設定、既知の制約
+- [アイコン更新手順](ScreenCapture/ICON_SETUP.md): EXE と通知領域アイコンの更新方法
+
+## ビルド方法
 
 ```sh
-# ���|�W�g�����N���[��
+# リポジトリをクローン
 git clone https://github.com/sakusan393/ScreenCapture.git
 cd ScreenCapture
 
-# �r���h
-dotnet build
+# ビルド
+dotnet build ScreenCapture.sln --configuration Debug
 
-# ���s
+# 実行
 dotnet run --project ScreenCapture/ScreenCapture.csproj
 
-# ���s�pEXE�̍쐬
-cd ScreenCapture
-dotnet publish -c Release
-# �o��: bin\Release\net8.0-windows\win-x64\publish\ScreenCapture.exe
+# 実行用EXEの作成
+dotnet publish ScreenCapture/ScreenCapture.csproj --configuration Release
+# 出力: ScreenCapture\bin\Release\net8.0-windows\win-x64\publish\ScreenCapture.exe
 ```
 
 
-## ���C�Z���X
+## ライセンス
 
-���̃\�t�g�E�F�A�͌l���p�E���p���p�Ƃ��ɖ����Ŏg�p�ł��܂��B
+このソフトウェアは個人利用・商用利用ともに無料で使用できます。
 
-## �o�O�񍐁E�@�\�v�]
+## バグ報告・機能要望
 
-[Issues](https://github.com/sakusan393/ScreenCapture/issues) �܂ł��肢���܂��B
+[Issues](https://github.com/sakusan393/ScreenCapture/issues) までお願いします。
 
-## ���
+## 作者
 
 GitHub: [@sakusan393](https://github.com/sakusan393)
-
