@@ -263,6 +263,12 @@ namespace ScreenCapture
 
             contextMenu.Items.Add(new ToolStripSeparator());
 
+            var licensesItem = new ToolStripMenuItem("Third-party Licenses...");
+            licensesItem.Click += (s, e) => ShowThirdPartyLicenses();
+            contextMenu.Items.Add(licensesItem);
+
+            contextMenu.Items.Add(new ToolStripSeparator());
+
             var exitItem = new ToolStripMenuItem("Exit");
             exitItem.Click += (s, e) => Shutdown();
             contextMenu.Items.Add(exitItem);
@@ -306,6 +312,16 @@ namespace ScreenCapture
                 // メニューを更新
                 UpdateContextMenu();
             }
+        }
+
+        private void ShowThirdPartyLicenses()
+        {
+            var licensesWindow = new ThirdPartyLicensesWindow
+            {
+                Owner = _hiddenWindow,
+                Topmost = true
+            };
+            licensesWindow.ShowDialog();
         }
 
         protected override void OnExit(ExitEventArgs e)
