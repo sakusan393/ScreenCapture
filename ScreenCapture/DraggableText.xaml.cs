@@ -7,7 +7,6 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Forms = System.Windows.Forms;
 using MediaColor = System.Windows.Media.Color;
-using Xceed.Wpf.Toolkit;
 
 namespace ScreenCapture
 {
@@ -35,10 +34,10 @@ namespace ScreenCapture
             var fontSize = TextStyleSettings.TextFontSize;
             
             TextColorPicker.SelectedColor = textColor;
-            TextColorPicker.SelectedColorChanged += OnTextColorChanged;
+            TextColorPicker.ColorChanged += OnTextColorChanged;
             
             TextBackgroundPicker.SelectedColor = backgroundColor;
-            TextBackgroundPicker.SelectedColorChanged += OnBackgroundColorChanged;
+            TextBackgroundPicker.ColorChanged += OnBackgroundColorChanged;
             
             SetStyle(fontSize, textColor, backgroundColor);
             
@@ -184,27 +183,17 @@ namespace ScreenCapture
         public MediaColor GetBackgroundColor()
             => TextBox.Background is SolidColorBrush b ? b.Color : Colors.Transparent;
 
-        private void OnTextColorChanged(object? sender, RoutedPropertyChangedEventArgs<MediaColor?> e)
+        private void OnTextColorChanged(object? sender, EventArgs e)
         {
-            if (e.NewValue == null)
-            {
-                return;
-            }
-
-            var color = e.NewValue.Value;
+            var color = TextColorPicker.SelectedColor;
             TextBox.Foreground = new SolidColorBrush(color);
             TextBox.CaretBrush = new SolidColorBrush(color);
             TextStyleSettings.TextColor = color;
         }
 
-        private void OnBackgroundColorChanged(object? sender, RoutedPropertyChangedEventArgs<MediaColor?> e)
+        private void OnBackgroundColorChanged(object? sender, EventArgs e)
         {
-            if (e.NewValue == null)
-            {
-                return;
-            }
-
-            var color = e.NewValue.Value;
+            var color = TextBackgroundPicker.SelectedColor;
             TextBox.Background = new SolidColorBrush(color);
             TextStyleSettings.BackgroundColor = color;
         }

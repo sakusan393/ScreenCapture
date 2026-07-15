@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Extended.Wpf.Toolkit" Version="5.0.0" />
+    <PackageReference Include="PixiEditor.ColorPicker" Version="3.4.2.3" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.2" />
   </ItemGroup>
 
@@ -37,8 +37,10 @@
   <ItemGroup>
     <None Remove="Fonts\NotoSansJP-Variable.ttf" />
     <None Remove="Fonts\OFL-NotoSansJP.txt" />
+    <None Remove="Licenses\MIT-PixiEditor.ColorPicker.txt" />
     <Resource Include="Fonts\NotoSansJP-Variable.ttf" />
     <EmbeddedResource Include="Fonts\OFL-NotoSansJP.txt" />
+    <EmbeddedResource Include="Licenses\MIT-PixiEditor.ColorPicker.txt" />
   </ItemGroup>
 
 </Project>

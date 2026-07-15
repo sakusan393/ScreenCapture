@@ -30,6 +30,7 @@ flowchart LR
 | `DraggableText` | 埋め込み Noto Sans JP SemiBold によるテキスト編集、移動、選択 UI、文字色・背景色・サイズ、削除 |
 | `DraggableImage` | 貼り付け画像の移動、選択 UI、リサイズ、回転、枠、削除 |
 | `PaintToolbarWindow` | ペイント色・太さ・矢印・履歴上限の操作をイベントで `CaptureWindow` へ通知 |
+| `ColorPickerButton` | 余白のない正方形の色見本ボタン、透明度対応 `StandardColorPicker` Popup、共通の色変更通知 |
 | `ThirdPartyLicensesWindow` | EXE に埋め込まれた第三者ライセンス本文の表示 |
 | `HotKeyManager` | `RegisterHotKey` / `UnregisterHotKey` と `WM_HOTKEY` の橋渡し |
 | `HotKeySettings` | ホットキー設定 JSON の読み書き |
@@ -154,7 +155,7 @@ PaintToolbarWindow (別の owned window)
 
 ## 外部依存と Windows API
 
-- `Extended.Wpf.Toolkit`: 透明度対応 ColorPicker
+- `PixiEditor.ColorPicker`: `ColorPickerButton` の Popup 内で使用する透明度対応 `StandardColorPicker`（MIT License）
 - `System.Drawing.Common`: `CopyFromScreen` と通知領域アイコン周辺
 - `Fonts/NotoSansJP-Variable.ttf`: Google Fonts 公式の Noto Sans JP 可変 TrueType。WPF リソースとして EXE に埋め込み、テキスト注釈では SemiBold (600) を選択
 - `Fonts/OFL-NotoSansJP.txt`: Noto Sans JP の SIL Open Font License 1.1。埋め込みリソースから `ThirdPartyLicensesWindow` に表示

@@ -17,7 +17,6 @@ using WpfColor = System.Windows.Media.Color;
 using WpfKeyEventArgs = System.Windows.Input.KeyEventArgs;
 using WpfMouseEventArgs = System.Windows.Input.MouseEventArgs;
 using WpfPoint = System.Windows.Point;
-using Xceed.Wpf.Toolkit;
 
 namespace ScreenCapture
 {
@@ -36,8 +35,8 @@ namespace ScreenCapture
         private double _captureHeight;
         private double _contentOffsetX;
         private double _contentOffsetY;
-        private ColorPicker? _frameColorPicker;
-        private ColorPicker? _backgroundColorPicker;
+        private ColorPickerButton? _frameColorPicker;
+        private ColorPickerButton? _backgroundColorPicker;
 
         // ペイントモード関連
         private bool _isPaintMode;
@@ -96,8 +95,8 @@ namespace ScreenCapture
 
             _contentLayer = FindName("ContentLayer") as Grid;
             _captureContent = FindName("CaptureContent") as Grid;
-            _frameColorPicker = FindName("FrameColorPicker") as ColorPicker;
-            _backgroundColorPicker = FindName("BackgroundColorPicker") as ColorPicker;
+            _frameColorPicker = FindName("FrameColorPicker") as ColorPickerButton;
+            _backgroundColorPicker = FindName("BackgroundColorPicker") as ColorPickerButton;
 
             _captureWidth = image.Width;
             _captureHeight = image.Height;
@@ -123,7 +122,8 @@ namespace ScreenCapture
             if (_frameColorPicker != null)
             {
                 _frameColorPicker.SelectedColor = frameColor;
-                _frameColorPicker.SelectedColorChanged += OnFrameColorChanged;
+                _frameColorPicker.ColorChanged += OnFrameColorChanged;
+                _frameColorPicker.PopupClosed += OnChromeColorPickerPopupClosed;
             }
 
             if (_contentLayer != null)
@@ -133,7 +133,8 @@ namespace ScreenCapture
                 if (_backgroundColorPicker != null)
                 {
                     _backgroundColorPicker.SelectedColor = backgroundColor;
-                    _backgroundColorPicker.SelectedColorChanged += OnBackgroundColorChanged;
+                    _backgroundColorPicker.ColorChanged += OnBackgroundColorChanged;
+                    _backgroundColorPicker.PopupClosed += OnChromeColorPickerPopupClosed;
                 }
             }
             InitializeResizeHandles();
@@ -210,16 +211,9 @@ namespace ScreenCapture
             // マウスが出たら枠線の透明度を下げる（25%）と閉じるボタンを非表示
             MouseLeave += (s, e) =>
             {
-                BorderFrame.Opacity = 0.5;
-                CloseButton.Visibility = Visibility.Collapsed;
-                MinimizeButton.Visibility = Visibility.Collapsed;
-                if (_frameColorPicker != null)
+                if (!IsChromeColorPickerPopupOpen())
                 {
-                    _frameColorPicker.Visibility = Visibility.Collapsed;
-                }
-                if (_backgroundColorPicker != null)
-                {
-                    _backgroundColorPicker.Visibility = Visibility.Collapsed;
+                    HideWindowChrome();
                 }
             };
 
@@ -1355,28 +1349,61 @@ namespace ScreenCapture
             }
         }
 
-        private void OnFrameColorChanged(object? sender, RoutedPropertyChangedEventArgs<WpfColor?> e)
+        private bool IsChromeColorPickerPopupOpen()
         {
-            if (e.NewValue == null)
-            {
-                return;
-            }
-
-            var brush = new SolidColorBrush(e.NewValue.Value);
-            BorderFrame.BorderBrush = brush;
-            TextStyleSettings.CaptureFrameColor = e.NewValue.Value;
+            return (_frameColorPicker?.IsPopupOpen ?? false)
+                || (_backgroundColorPicker?.IsPopupOpen ?? false);
         }
 
-        private void OnBackgroundColorChanged(object? sender, RoutedPropertyChangedEventArgs<WpfColor?> e)
+        private void OnChromeColorPickerPopupClosed(object? sender, EventArgs e)
         {
-            if (e.NewValue == null || _contentLayer == null)
+            if (!IsMouseOver && !IsChromeColorPickerPopupOpen())
+            {
+                HideWindowChrome();
+            }
+        }
+
+        private void HideWindowChrome()
+        {
+            BorderFrame.Opacity = 0.5;
+            CloseButton.Visibility = Visibility.Collapsed;
+            MinimizeButton.Visibility = Visibility.Collapsed;
+
+            if (_frameColorPicker != null)
+            {
+                _frameColorPicker.Visibility = Visibility.Collapsed;
+            }
+
+            if (_backgroundColorPicker != null)
+            {
+                _backgroundColorPicker.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void OnFrameColorChanged(object? sender, EventArgs e)
+        {
+            if (_frameColorPicker == null)
             {
                 return;
             }
 
-            var brush = new SolidColorBrush(e.NewValue.Value);
+            var color = _frameColorPicker.SelectedColor;
+            var brush = new SolidColorBrush(color);
+            BorderFrame.BorderBrush = brush;
+            TextStyleSettings.CaptureFrameColor = color;
+        }
+
+        private void OnBackgroundColorChanged(object? sender, EventArgs e)
+        {
+            if (_backgroundColorPicker == null || _contentLayer == null)
+            {
+                return;
+            }
+
+            var color = _backgroundColorPicker.SelectedColor;
+            var brush = new SolidColorBrush(color);
             _contentLayer.Background = brush;
-            TextStyleSettings.CaptureBackgroundColor = e.NewValue.Value;
+            TextStyleSettings.CaptureBackgroundColor = color;
         }
 
         private void OnWindowMouseWheel(object sender, MouseWheelEventArgs e)

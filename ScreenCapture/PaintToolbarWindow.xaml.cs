@@ -26,7 +26,7 @@ namespace ScreenCapture
             InitializeComponent();
 
             PaintColorPicker.SelectedColor = TextStyleSettings.PaintColor;
-            PaintColorPicker.SelectedColorChanged += OnSelectedColorChanged;
+            PaintColorPicker.ColorChanged += OnPaintColorChanged;
 
             _arrowModeToggle = FindName("ArrowModeToggle") as ToggleButton;
 
@@ -79,14 +79,9 @@ namespace ScreenCapture
                 && (e.SystemKey == Key.LeftAlt || e.SystemKey == Key.RightAlt);
         }
 
-        private void OnSelectedColorChanged(object? sender, RoutedPropertyChangedEventArgs<MediaColor?> e)
+        private void OnPaintColorChanged(object? sender, EventArgs e)
         {
-            if (e.NewValue == null)
-            {
-                return;
-            }
-
-            ColorSelected?.Invoke(e.NewValue.Value);
+            ColorSelected?.Invoke(PaintColorPicker.SelectedColor);
         }
 
         public void ApplySettings(MediaColor color, double thickness)

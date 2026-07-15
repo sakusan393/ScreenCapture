@@ -2,7 +2,6 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:ScreenCapture"
-        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         WindowStyle="None"
         ResizeMode="CanMinimize"
         Topmost="True"
@@ -36,27 +35,25 @@
         <Thumb x:Name="ResizeBottomThumb" Height="6" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Cursor="SizeNS" Opacity="0"/>
         <Thumb x:Name="ResizeBottomRightThumb" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Bottom" Cursor="SizeNWSE" Opacity="0"/>
 
-        <xctk:ColorPicker x:Name="FrameColorPicker"
-                          Width="60"
-                          Height="30"
-                          Margin="0,5,75,0"
-                          HorizontalAlignment="Right"
-                          VerticalAlignment="Top"
-                          Visibility="Collapsed"
-                          Panel.ZIndex="1000"
-                          UsingAlphaChannel="True"
-                          ToolTip="枠線の色を変更"/>
+        <local:ColorPickerButton x:Name="FrameColorPicker"
+                                 Width="30"
+                                 Height="30"
+                                 Margin="0,5,75,0"
+                                 HorizontalAlignment="Right"
+                                 VerticalAlignment="Top"
+                                 Visibility="Collapsed"
+                                 Panel.ZIndex="1000"
+                                 ToolTip="枠線の色を変更"/>
 
-        <xctk:ColorPicker x:Name="BackgroundColorPicker"
-                          Width="60"
-                          Height="30"
-                          Margin="0,5,145,0"
-                          HorizontalAlignment="Right"
-                          VerticalAlignment="Top"
-                          Visibility="Collapsed"
-                          Panel.ZIndex="1000"
-                          UsingAlphaChannel="True"
-                          ToolTip="背景色を変更"/>
+        <local:ColorPickerButton x:Name="BackgroundColorPicker"
+                                 Width="30"
+                                 Height="30"
+                                 Margin="0,5,110,0"
+                                 HorizontalAlignment="Right"
+                                 VerticalAlignment="Top"
+                                 Visibility="Collapsed"
+                                 Panel.ZIndex="1000"
+                                 ToolTip="背景色を変更"/>
 
         <Button x:Name="MinimizeButton"
                 Width="30" Height="30"

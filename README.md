@@ -86,7 +86,7 @@
 
 - タスクトレイ（通知領域）のアイコンを右クリック
 - **Hotkey Settings...** からホットキーを有効化・変更
-- **Third-party Licenses...** から埋め込みフォントのライセンスを表示
+- **Third-party Licenses...** から埋め込みフォントとカラーピッカーのライセンスを表示
 - ホットキー有効時は設定したキーでキャプチャを起動
 
 ## 技術スタック
@@ -131,7 +131,7 @@ dotnet publish ScreenCapture/ScreenCapture.csproj --configuration Release
 
 このソフトウェアは個人利用・商用利用ともに無料で使用できます。
 
-埋め込みフォントの Noto Sans JP は SIL Open Font License 1.1 で提供されています。ライセンス本文はタスクトレイメニューの **Third-party Licenses...** から確認できます。
+埋め込みフォントの Noto Sans JP は SIL Open Font License 1.1、PixiEditor.ColorPicker は MIT License で提供されています。ライセンス本文は [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) と、タスクトレイメニューの **Third-party Licenses...** から確認できます。
 
 ## バグ報告・機能要望
 

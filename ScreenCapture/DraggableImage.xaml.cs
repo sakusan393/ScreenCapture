@@ -6,7 +6,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using MediaColor = System.Windows.Media.Color;
-using Xceed.Wpf.Toolkit;
 
 namespace ScreenCapture
 {
@@ -37,7 +36,7 @@ namespace ScreenCapture
             Height = image.PixelHeight;
 
             BorderColorPicker.SelectedColor = _borderColor;
-            BorderColorPicker.SelectedColorChanged += OnBorderColorChanged;
+            BorderColorPicker.ColorChanged += OnBorderColorChanged;
 
             UpdateBorderVisibility();
 
@@ -155,14 +154,9 @@ namespace ScreenCapture
             UpdateBorderVisibility();
         }
 
-        private void OnBorderColorChanged(object? sender, RoutedPropertyChangedEventArgs<MediaColor?> e)
+        private void OnBorderColorChanged(object? sender, EventArgs e)
         {
-            if (e.NewValue == null)
-            {
-                return;
-            }
-
-            _borderColor = e.NewValue.Value;
+            _borderColor = BorderColorPicker.SelectedColor;
             TextStyleSettings.ImageBorderColor = _borderColor;
             UpdateBorderVisibility();
         }
