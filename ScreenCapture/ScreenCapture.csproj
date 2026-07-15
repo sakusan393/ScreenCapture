@@ -7,20 +7,25 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    
+
     <!-- 単一EXEファイル発行設定 -->
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    
+
     <!-- アプリケーション情報 -->
     <AssemblyName>ScreenCapture</AssemblyName>
     <Version>1.0.0</Version>
-    <Authors>sakusan393</Authors>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Authors>393</Authors>
+    <Company>393</Company>
     <Product>ScreenCapture</Product>
+    <Copyright>Copyright © 2026 393</Copyright>
     <Description>画面キャプチャツール - テキスト・画像追加・ペイント機能付き</Description>
-    
+    <RepositoryUrl>https://github.com/sakusan393/ScreenCapture</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
     <!-- アプリケーションアイコン -->
     <ApplicationIcon>app202620231858.ico</ApplicationIcon>
   </PropertyGroup>

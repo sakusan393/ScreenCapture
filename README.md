@@ -94,7 +94,7 @@
 - .NET 8.0
 - WPF (Windows Presentation Foundation)
 - C#
-- Extended WPF Toolkit (カラーピッカー)
+- PixiEditor.ColorPicker (透明度対応カラーピッカー)
 
 ## 開発環境
 
@@ -106,6 +106,7 @@
 - [Codex 作業ガイド](AGENTS.md): Codex が変更時に守るルールと確認事項
 - [開発ガイド](DEVELOPMENT.md): セットアップ、ブランチ運用、ビルド、手動回帰項目
 - [アーキテクチャ](docs/ARCHITECTURE.md): 実行フロー、座標、レイヤー、設定、既知の制約
+- [コード署名とRelease運用](docs/CODE_SIGNING.md): 初回Release、SignPath申請、承認後の署名フロー
 - [アイコン更新手順](ScreenCapture/ICON_SETUP.md): EXE と通知領域アイコンの更新方法
 
 ## ビルド方法
@@ -129,14 +130,25 @@ dotnet publish ScreenCapture/ScreenCapture.csproj --configuration Release
 
 ## ライセンス
 
-このソフトウェアは個人利用・商用利用ともに無料で使用できます。
+ScreenCaptureは [MIT License](LICENSE) で公開しています。個人利用・商用利用、変更、再配布が可能です。詳細な条件はライセンス本文を確認してください。
 
 埋め込みフォントの Noto Sans JP は SIL Open Font License 1.1、PixiEditor.ColorPicker は MIT License で提供されています。ライセンス本文は [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) と、タスクトレイメニューの **Third-party Licenses...** から確認できます。
+
+## Code signing policy
+
+署名済みReleaseでは、[SignPath.io](https://signpath.io/) による無料コード署名と [SignPath Foundation](https://signpath.org/) の証明書を使用します。申請中に公開する初回の未署名Releaseは、Releaseノートで未署名であることを明記します。
+
+- Committer and reviewer: [393](https://393.bz/) ([sakusan393](https://github.com/sakusan393))
+- Approver: [393](https://393.bz/) ([sakusan393](https://github.com/sakusan393))
+- 詳細: [Code signing policy](CODE_SIGNING_POLICY.md)
+- [Privacy policy](PRIVACY.md): ScreenCaptureは情報をネットワーク上のシステムへ送信しません。
 
 ## バグ報告・機能要望
 
 [Issues](https://github.com/sakusan393/ScreenCapture/issues) までお願いします。
 
 ## 作者
+
+Website: [393](https://393.bz/)
 
 GitHub: [@sakusan393](https://github.com/sakusan393)

@@ -191,4 +191,4 @@ PaintToolbarWindow (別の owned window)
 - 保存ダイアログの拡張子と PNG 固定 encoder が一致していない。
 - 設定、単一起動、ホットキー周辺には例外を記録しない catch があり、障害解析が難しい。
 - `MainWindow` と未使用の起動補助メソッドが残っている。削除時は XAML の Application 設定と起動経路を再確認する。
-- `README.md` の License バッジは現在リポジトリにない `LICENSE` を参照している。ライセンス本文は所有者の確認なしに推測して追加しない。
+- GitHub Actionsはビルドと初回未署名Releaseまでを自動化している。SignPathの署名要求と署名済みArtifactへの差し替えは、Foundation承認後に組織固有の設定を使って追加する。
