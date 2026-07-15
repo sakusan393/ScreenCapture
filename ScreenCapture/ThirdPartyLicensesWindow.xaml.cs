@@ -7,21 +7,50 @@ namespace ScreenCapture
 {
     public partial class ThirdPartyLicensesWindow : Window
     {
-        private const string LicenseResourceName = "ScreenCapture.Fonts.OFL-NotoSansJP.txt";
+        private static readonly (string Title, string ResourceName)[] LicenseResources =
+        {
+            (
+                "PixiEditor.ColorPicker 3.4.2.3 — MIT License",
+                "ScreenCapture.Licenses.MIT-PixiEditor.ColorPicker.txt"),
+            (
+                "Noto Sans JP — SIL Open Font License 1.1",
+                "ScreenCapture.Fonts.OFL-NotoSansJP.txt")
+        };
 
         public ThirdPartyLicensesWindow()
         {
             InitializeComponent();
-            LicenseTextBox.Text = LoadLicenseText();
+            LicenseTextBox.Text = LoadLicenseTexts();
         }
 
-        private static string LoadLicenseText()
+        private static string LoadLicenseTexts()
+        {
+            var text = new StringBuilder();
+
+            foreach (var license in LicenseResources)
+            {
+                if (text.Length > 0)
+                {
+                    text.AppendLine();
+                    text.AppendLine(new string('=', 80));
+                    text.AppendLine();
+                }
+
+                text.AppendLine(license.Title);
+                text.AppendLine(new string('-', license.Title.Length));
+                text.Append(LoadLicenseText(license.ResourceName, license.Title));
+            }
+
+            return text.ToString();
+        }
+
+        private static string LoadLicenseText(string resourceName, string title)
         {
             var assembly = Assembly.GetExecutingAssembly();
-            using var stream = assembly.GetManifestResourceStream(LicenseResourceName);
+            using var stream = assembly.GetManifestResourceStream(resourceName);
             if (stream == null)
             {
-                return "The embedded Noto Sans JP license could not be loaded.";
+                return $"The embedded license for {title} could not be loaded.";
             }
 
             using var reader = new StreamReader(stream, Encoding.UTF8);
