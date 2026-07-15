@@ -1,0 +1,104 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Validate release source and version
+        shell: pwsh
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor $env:GITHUB_SHA origin/main
+          if ($LASTEXITCODE -ne 0) {
+            throw "Release tags must point to a commit contained in origin/main."
+          }
+
+          $tag = "${{ github.ref_name }}"
+          if ($tag -notmatch '^v(?<version>\d+\.\d+\.\d+)$') {
+            throw "Release tag must use the vMAJOR.MINOR.PATCH format."
+          }
+
+          $releaseVersion = $Matches.version
+          [xml]$project = Get-Content -LiteralPath "ScreenCapture/ScreenCapture.csproj" -Raw
+          $projectVersion = [string]$project.Project.PropertyGroup.Version
+          if ($releaseVersion -ne $projectVersion) {
+            throw "Tag version $releaseVersion does not match project version $projectVersion."
+          }
+
+          "RELEASE_VERSION=$releaseVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Restore dependencies
+        run: dotnet restore ScreenCapture.sln
+
+      - name: Publish unsigned Release
+        run: dotnet publish ScreenCapture/ScreenCapture.csproj --configuration Release --no-restore --output artifacts/publish -p:Version=$env:RELEASE_VERSION
+
+      - name: Create SHA-256 checksum
+        shell: pwsh
+        run: |
+          $exe = "artifacts/publish/ScreenCapture.exe"
+          if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) {
+            throw "Published executable was not found: $exe"
+          }
+
+          $hash = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash *ScreenCapture.exe" | Set-Content -LiteralPath "$exe.sha256" -Encoding ascii
+
+      - name: Upload unsigned artifact
+        id: upload-unsigned-artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: unsigned-ScreenCapture-${{ github.ref_name }}
+          path: |
+            artifacts/publish/ScreenCapture.exe
+            artifacts/publish/ScreenCapture.exe.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+      - name: Prepare release notes
+        shell: pwsh
+        run: |
+          @'
+          ## Code signing policy
+
+          This initial release is unsigned while ScreenCapture applies for SignPath Foundation approval.
+          See the [code signing policy](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/CODE_SIGNING_POLICY.md) and [privacy policy](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/PRIVACY.md).
+
+          ## Verification
+
+          The attached `ScreenCapture.exe.sha256` file contains the SHA-256 checksum for `ScreenCapture.exe`.
+          '@ | Set-Content -LiteralPath "artifacts/release-notes.md" -Encoding utf8
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" `
+            "artifacts/publish/ScreenCapture.exe" `
+            "artifacts/publish/ScreenCapture.exe.sha256" `
+            --repo "${{ github.repository }}" `
+            --verify-tag `
+            --title "ScreenCapture $env:RELEASE_VERSION" `
+            --notes-file "artifacts/release-notes.md"

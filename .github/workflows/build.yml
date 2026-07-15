@@ -1,0 +1,55 @@
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore ScreenCapture.sln
+
+      - name: Build Debug
+        run: dotnet build ScreenCapture.sln --configuration Debug --no-restore
+
+      - name: Publish unsigned Release
+        run: dotnet publish ScreenCapture/ScreenCapture.csproj --configuration Release --no-restore --output artifacts/publish
+
+      - name: Verify executable
+        shell: pwsh
+        run: |
+          $exe = "artifacts/publish/ScreenCapture.exe"
+          if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) {
+            throw "Published executable was not found: $exe"
+          }
+
+      - name: Upload unsigned executable
+        id: upload-unsigned-artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: unsigned-ScreenCapture-${{ github.sha }}
+          path: artifacts/publish/ScreenCapture.exe
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14

@@ -33,6 +33,14 @@ dotnet publish ScreenCapture/ScreenCapture.csproj --configuration Release
 
 プロジェクトには `win-x64`、自己完結、単一ファイル発行が設定されています。発行先は通常 `ScreenCapture/bin/Release/net8.0-windows/win-x64/publish/` です。
 
+## GitHub ActionsとRelease
+
+`.github/workflows/build.yml` はPull Request、`main`へのpush、手動実行でDebugビルドとRelease発行を行い、未署名EXEをGitHub Actions Artifactへ保存します。外部Actionはメジャータグではなく検証済みのコミットSHAへ固定します。
+
+`.github/workflows/release.yml` は `vMAJOR.MINOR.PATCH` タグで起動します。タグが `main` の履歴上にあり、`ScreenCapture.csproj` の `Version` と一致する場合だけ、未署名EXE、SHA-256チェックサム、GitHub Releaseを生成します。初回ReleaseとSignPath承認後の運用は [`docs/CODE_SIGNING.md`](docs/CODE_SIGNING.md) を参照してください。
+
+SignPath承認前は、APIトークンやダミーの組織IDをワークフローへ追加しません。承認後もAPIトークンはGitHub Actions Secretsへ保存し、ログやリポジトリへ出力しないでください。
+
 ## ブランチ運用
 
 1. 新しい機能追加や修正は、最新の `main` から `feature/<topic>` ブランチを作成する。

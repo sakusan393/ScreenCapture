@@ -43,17 +43,17 @@
 - **Ctrl+Z**でアンドゥ
 - **Ctrl+Y**でリドゥ
 - **履歴回数**は 10/20/50/100 回から選択
-- ペイント設定は次回起動時も保持
+- ペイントの色と太さは次回起動時も保持
 
 ### その他
 - マウスホバーで枠線・ボタンを表示
 - 枠線色をカラーピッカーで変更（透明度対応）
 - キャプチャウィンドウの背景色をカラーピッカーで変更
 - 四辺・四隅をドラッグしてエリアを拡張（拡張分は背景色で塗りつぶし）
-- 複数の要素を選択すると最前面に移動
-- **Layers** パネルでペイント/画像/テキストのレイヤー順をドラッグで変更（順序は保持され、保存/コピーには含まれません）
+- 画像またはテキストを選択すると、同じ種類のレイヤー内で最前面に移動
+- **Layers** パネルでペイント/画像/テキストのレイヤー順をドラッグで変更（並べ替えた順序は次回起動時も保持され、Layers パネル自体は保存/コピーに含まれません）
 - ペイントモードでペイントレイヤーが画像/テキストより上の場合、描画が優先されます
-- **Esc**キーで終了
+- **Esc**キーで現在の編集画面を閉じる、または範囲選択をキャンセル（アプリは通知領域で動作を継続）
 - 最小化
 - **マウスホイール**でキャプチャウィンドウの透明度を変更（ほぼ完全透明まで可能）
 
@@ -80,7 +80,7 @@
 | **Ctrl+Z** | アンドゥ |
 | **Ctrl+Y** | リドゥ |
 | **マウスホイール** | 透明度変更 |
-| **Esc** | 終了 |
+| **Esc** | 現在の編集画面を閉じる／範囲選択をキャンセル |
 
 ## ホットキー設定
 
@@ -94,7 +94,7 @@
 - .NET 8.0
 - WPF (Windows Presentation Foundation)
 - C#
-- Extended WPF Toolkit (カラーピッカー)
+- PixiEditor.ColorPicker (透明度対応カラーピッカー)
 
 ## 開発環境
 
@@ -106,6 +106,7 @@
 - [Codex 作業ガイド](AGENTS.md): Codex が変更時に守るルールと確認事項
 - [開発ガイド](DEVELOPMENT.md): セットアップ、ブランチ運用、ビルド、手動回帰項目
 - [アーキテクチャ](docs/ARCHITECTURE.md): 実行フロー、座標、レイヤー、設定、既知の制約
+- [コード署名とRelease運用](docs/CODE_SIGNING.md): 初回Release、SignPath申請、承認後の署名フロー
 - [アイコン更新手順](ScreenCapture/ICON_SETUP.md): EXE と通知領域アイコンの更新方法
 
 ## ビルド方法
@@ -129,14 +130,25 @@ dotnet publish ScreenCapture/ScreenCapture.csproj --configuration Release
 
 ## ライセンス
 
-このソフトウェアは個人利用・商用利用ともに無料で使用できます。
+ScreenCaptureは [MIT License](LICENSE) で公開しています。個人利用・商用利用、変更、再配布が可能です。詳細な条件はライセンス本文を確認してください。
 
 埋め込みフォントの Noto Sans JP は SIL Open Font License 1.1、PixiEditor.ColorPicker は MIT License で提供されています。ライセンス本文は [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) と、タスクトレイメニューの **Third-party Licenses...** から確認できます。
+
+## Code signing policy
+
+SignPath Foundationの承認後、署名済みReleaseでは [SignPath.io](https://signpath.io/) による無料コード署名と [SignPath Foundation](https://signpath.org/) の証明書を使用します。申請前に公開する初回の未署名Releaseは、Releaseノートで未署名であることを明記します。
+
+- Committer and reviewer: [393](https://393.bz/) ([sakusan393](https://github.com/sakusan393))
+- Approver: [393](https://393.bz/) ([sakusan393](https://github.com/sakusan393))
+- 詳細: [Code signing policy](CODE_SIGNING_POLICY.md)
+- [Privacy policy](PRIVACY.md): ScreenCaptureは情報をネットワーク上のシステムへ送信しません。
 
 ## バグ報告・機能要望
 
 [Issues](https://github.com/sakusan393/ScreenCapture/issues) までお願いします。
 
 ## 作者
+
+Website: [393](https://393.bz/)
 
 GitHub: [@sakusan393](https://github.com/sakusan393)
