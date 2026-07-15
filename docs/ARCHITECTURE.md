@@ -27,9 +27,10 @@ flowchart LR
 | `App.xaml.cs` | 単一起動、名前付きパイプ、非表示ウィンドウ、通知領域、グローバルホットキー、範囲選択画面の生成 |
 | `SelectionOverlayWindow` | 仮想スクリーン全体の暗幕、ドラッグ範囲選択、Ctrl+クリックによる Win32 ウィンドウ選択、`CopyFromScreen` |
 | `CaptureWindow` | キャプチャ表示、領域拡張、入力ルーティング、レイヤー順、合成出力、ペイント履歴 |
-| `DraggableText` | テキスト編集、移動、選択 UI、文字色・背景色・サイズ、削除 |
+| `DraggableText` | 埋め込み Noto Sans JP SemiBold によるテキスト編集、移動、選択 UI、文字色・背景色・サイズ、削除 |
 | `DraggableImage` | 貼り付け画像の移動、選択 UI、リサイズ、回転、枠、削除 |
 | `PaintToolbarWindow` | ペイント色・太さ・矢印・履歴上限の操作をイベントで `CaptureWindow` へ通知 |
+| `ThirdPartyLicensesWindow` | EXE に埋め込まれた第三者ライセンス本文の表示 |
 | `HotKeyManager` | `RegisterHotKey` / `UnregisterHotKey` と `WM_HOTKEY` の橋渡し |
 | `HotKeySettings` | ホットキー設定 JSON の読み書き |
 | `TextStyleSettings` | 注釈、ペイント、枠、背景、レイヤー順の設定 JSON の読み書き |
@@ -155,6 +156,8 @@ PaintToolbarWindow (別の owned window)
 
 - `Extended.Wpf.Toolkit`: 透明度対応 ColorPicker
 - `System.Drawing.Common`: `CopyFromScreen` と通知領域アイコン周辺
+- `Fonts/NotoSansJP-Variable.ttf`: Google Fonts 公式の Noto Sans JP 可変 TrueType。WPF リソースとして EXE に埋め込み、テキスト注釈では SemiBold (600) を選択
+- `Fonts/OFL-NotoSansJP.txt`: Noto Sans JP の SIL Open Font License 1.1。埋め込みリソースから `ThirdPartyLicensesWindow` に表示
 - WPF / Windows Forms: UI と保存ダイアログ／通知領域
 - `user32.dll`: ウィンドウ選択、グローバルホットキー
 - Named Mutex / Named Pipe: 単一起動と既存プロセスへの通知
