@@ -19,18 +19,12 @@ namespace ScreenCapture
                 OnSelectedColorPropertyChanged));
 
         private bool _isSynchronizingPicker;
-        private bool _isPointerInteraction;
-        private bool _colorChangedDuringPointerInteraction;
-
+        private Window? _popupHostWindow;
         public ColorPickerButton()
         {
             InitializeComponent();
             ApplySelectedColor(SelectedColor);
             IsVisibleChanged += OnColorPickerButtonIsVisibleChanged;
-            Picker.AddHandler(
-                Mouse.MouseUpEvent,
-                new MouseButtonEventHandler(Picker_MouseButtonUp),
-                true);
         }
 
         public MediaColor SelectedColor
@@ -85,28 +79,13 @@ namespace ScreenCapture
                 return;
             }
 
-            if (_isPointerInteraction)
-            {
-                _colorChangedDuringPointerInteraction = true;
-            }
-
             SelectedColor = Picker.SelectedColor;
         }
 
-        private void Picker_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void SwatchButton_Click(object sender, RoutedEventArgs e)
         {
-            _isPointerInteraction = true;
-            _colorChangedDuringPointerInteraction = false;
-        }
-
-        private void Picker_MouseButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            _isPointerInteraction = false;
-
-            if (_colorChangedDuringPointerInteraction)
-            {
-                PickerPopup.IsOpen = false;
-            }
+            PickerPopup.IsOpen = !PickerPopup.IsOpen;
+            e.Handled = true;
         }
 
         private void Picker_PreviewKeyDown(object sender, WpfKeyEventArgs e)
@@ -121,16 +100,61 @@ namespace ScreenCapture
         private void PickerPopup_Opened(object? sender, EventArgs e)
         {
             ApplySelectedColor(SelectedColor);
-            _isPointerInteraction = false;
-            _colorChangedDuringPointerInteraction = false;
+            SwatchButton.IsChecked = true;
+            _popupHostWindow = Window.GetWindow(this);
+            if (_popupHostWindow != null)
+            {
+                _popupHostWindow.PreviewMouseDown += PopupHostWindow_PreviewMouseDown;
+                _popupHostWindow.Deactivated += PopupHostWindow_Deactivated;
+            }
             Picker.Focus();
         }
 
         private void PickerPopup_Closed(object? sender, EventArgs e)
         {
-            _isPointerInteraction = false;
-            _colorChangedDuringPointerInteraction = false;
+            if (_popupHostWindow != null)
+            {
+                _popupHostWindow.PreviewMouseDown -= PopupHostWindow_PreviewMouseDown;
+                _popupHostWindow.Deactivated -= PopupHostWindow_Deactivated;
+                _popupHostWindow = null;
+            }
+
+            SwatchButton.IsChecked = false;
             PopupClosed?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void PopupHostWindow_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!IsInsideColorPicker(e.OriginalSource as DependencyObject))
+            {
+                PickerPopup.IsOpen = false;
+            }
+        }
+
+        private void PopupHostWindow_Deactivated(object? sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (PickerPopup.IsOpen
+                    && !Picker.IsMouseOver
+                    && !SwatchButton.IsMouseOver)
+                {
+                    PickerPopup.IsOpen = false;
+                }
+            }), System.Windows.Threading.DispatcherPriority.Input);
+        }
+
+        private bool IsInsideColorPicker(DependencyObject? source)
+        {
+            for (var current = source; current != null; current = VisualTreeHelper.GetParent(current))
+            {
+                if (current == this || current == Picker)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

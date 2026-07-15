@@ -9,7 +9,7 @@
              MinHeight="24">
     <Grid>
         <ToggleButton x:Name="SwatchButton"
-                      IsChecked="{Binding IsOpen, ElementName=PickerPopup, Mode=TwoWay}"
+                      Click="SwatchButton_Click"
                       Cursor="Hand"
                       Padding="0"
                       BorderThickness="0"
@@ -75,7 +75,7 @@
         <Popup x:Name="PickerPopup"
                Placement="Bottom"
                PlacementTarget="{Binding ElementName=SwatchButton}"
-               StaysOpen="False"
+               StaysOpen="True"
                AllowsTransparency="True"
                PopupAnimation="Fade"
                Opened="PickerPopup_Opened"
@@ -96,7 +96,6 @@
                                                  Height="360"
                                                  ShowAlpha="True"
                                                  ColorChanged="Picker_ColorChanged"
-                                                 PreviewMouseLeftButtonDown="Picker_PreviewMouseLeftButtonDown"
                                                  PreviewKeyDown="Picker_PreviewKeyDown"/>
             </Border>
         </Popup>

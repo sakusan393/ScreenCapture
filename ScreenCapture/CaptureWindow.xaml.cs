@@ -881,7 +881,7 @@ namespace ScreenCapture
             dt.PreviewMouseLeftButtonDown += (s, e) =>
             {
                 DeselectAllImages();
-                DeselectAllTexts();
+                DeselectAllTextsExcept(dt);
                 dt.Select();
                 _selectedText = dt;
 
@@ -920,6 +920,17 @@ namespace ScreenCapture
                 }
             }
             _selectedText = null;
+        }
+
+        private void DeselectAllTextsExcept(DraggableText selectedText)
+        {
+            foreach (var child in OverlayCanvas.Children)
+            {
+                if (child is DraggableText dt && dt != selectedText)
+                {
+                    dt.Deselect();
+                }
+            }
         }
 
         // 要素を最前面に移動
