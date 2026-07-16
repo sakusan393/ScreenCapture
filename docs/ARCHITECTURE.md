@@ -49,6 +49,8 @@ flowchart LR
 
 ## キャプチャ経路と座標系
 
+プロセスは `app.manifest` で Per-Monitor V2 DPI awareness と `asInvoker` を宣言する。WPF論理座標とWin32の物理ピクセルを変換する既存経路は、このDPIモードを前提に維持し、異なる表示倍率の複数モニターで回帰確認する。
+
 ### ドラッグ範囲
 
 `SelectionOverlayWindow` は `SystemParameters.VirtualScreen*` を使って全モニター領域に配置されます。ドラッグ矩形の WPF 座標へ仮想スクリーン原点を加え、`System.Drawing.Rectangle` として `Graphics.CopyFromScreen` へ渡します。
@@ -192,3 +194,4 @@ PaintToolbarWindow (別の owned window)
 - 設定、単一起動、ホットキー周辺には例外を記録しない catch があり、障害解析が難しい。
 - `MainWindow` と未使用の起動補助メソッドが残っている。削除時は XAML の Application 設定と起動経路を再確認する。
 - GitHub Actionsはビルドと初回未署名Releaseまでを自動化している。SignPathの署名要求と署名済みArtifactへの差し替えは、Foundation承認後に組織固有の設定を使って追加する。
+- Microsoft Store版は、自己完結のx64発行物をfull-trust desktop MSIXへ格納する。`runFullTrust` は画面キャプチャ、グローバルホットキー、通知領域、クリップボードなど既存のWin32経路を維持するために必要だが、実行整合性レベルは `mediumIL` で管理者権限を要求しない。Store IdentityはPartner Centerの値をビルド時に注入する。

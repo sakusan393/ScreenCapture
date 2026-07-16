@@ -65,6 +65,12 @@
 4. **Ctrl+C** でクリップボードにコピー
 5. Word/PowerPointなどに貼り付け
 
+## 配布
+
+- GitHub ReleaseのEXEは、現在は未署名の直接配布版です。
+- Microsoft Store向けにはMSIX提出パッケージを生成できます。Storeの審査を通過したパッケージはMicrosoftによって署名され、Storeから安全にインストール・更新できます。
+- Store提出手順: [Microsoft Store 配布](docs/MICROSOFT_STORE.md)
+
 ## ショートカットキー
 
 | キー | 機能 |
@@ -107,6 +113,7 @@
 - [開発ガイド](DEVELOPMENT.md): セットアップ、ブランチ運用、ビルド、手動回帰項目
 - [アーキテクチャ](docs/ARCHITECTURE.md): 実行フロー、座標、レイヤー、設定、既知の制約
 - [コード署名とRelease運用](docs/CODE_SIGNING.md): 初回Release、SignPath申請、承認後の署名フロー
+- [Microsoft Store 配布](docs/MICROSOFT_STORE.md): MSIX作成、Partner Center、Store提出手順
 - [アイコン更新手順](ScreenCapture/ICON_SETUP.md): EXE と通知領域アイコンの更新方法
 
 ## ビルド方法
@@ -125,6 +132,9 @@ dotnet run --project ScreenCapture/ScreenCapture.csproj
 # 実行用EXEの作成
 dotnet publish ScreenCapture/ScreenCapture.csproj --configuration Release
 # 出力: ScreenCapture\bin\Release\net8.0-windows\win-x64\publish\ScreenCapture.exe
+
+# Microsoft Store提出用MSIXの作成
+.\scripts\Build-StoreMsix.ps1
 ```
 
 
@@ -136,7 +146,7 @@ ScreenCaptureは [MIT License](LICENSE) で公開しています。個人利用�
 
 ## Code signing policy
 
-SignPath Foundationの承認後、署名済みReleaseでは [SignPath.io](https://signpath.io/) による無料コード署名と [SignPath Foundation](https://signpath.org/) の証明書を使用します。申請前に公開する初回の未署名Releaseは、Releaseノートで未署名であることを明記します。
+GitHub Releaseの直接配布版は、署名サービスが利用可能になるまで未署名であることをReleaseノートに明記します。Microsoft Store版は、Store認定後にMicrosoftによって署名されます。将来SignPath Foundationの承認を得た場合、GitHub Releaseの署名済み成果物には [SignPath.io](https://signpath.io/) と [SignPath Foundation](https://signpath.org/) の証明書を使用します。
 
 - Committer and reviewer: [393](https://393.bz/) ([sakusan393](https://github.com/sakusan393))
 - Approver: [393](https://393.bz/) ([sakusan393](https://github.com/sakusan393))

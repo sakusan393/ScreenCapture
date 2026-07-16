@@ -33,11 +33,21 @@ dotnet publish ScreenCapture/ScreenCapture.csproj --configuration Release
 
 プロジェクトには `win-x64`、自己完結、単一ファイル発行が設定されています。発行先は通常 `ScreenCapture/bin/Release/net8.0-windows/win-x64/publish/` です。
 
+Microsoft Store提出用MSIXの作成:
+
+```powershell
+.\scripts\Build-StoreMsix.ps1
+```
+
+Store用のIdentityと提出手順は [`docs/MICROSOFT_STORE.md`](docs/MICROSOFT_STORE.md) を参照してください。成果物は `artifacts/store/` に生成され、Gitへコミットしません。
+
 ## GitHub ActionsとRelease
 
 `.github/workflows/build.yml` はPull Request、`main`へのpush、手動実行でDebugビルドとRelease発行を行い、未署名EXEをGitHub Actions Artifactへ保存します。外部Actionはメジャータグではなく検証済みのコミットSHAへ固定します。
 
 `.github/workflows/release.yml` は `vMAJOR.MINOR.PATCH` タグで起動します。タグが `main` の履歴上にあり、`ScreenCapture.csproj` の `Version` と一致する場合だけ、未署名EXE、SHA-256チェックサム、GitHub Releaseを生成します。初回ReleaseとSignPath承認後の運用は [`docs/CODE_SIGNING.md`](docs/CODE_SIGNING.md) を参照してください。
+
+`.github/workflows/store-package.yml` は手動実行専用です。リポジトリに登録したPartner Centerの公開Identityを使用し、Store提出用の `.msixupload`、MSIX本体、シンボル、SHA-256をArtifactへ保存します。Store用パッケージをGitHub Releaseの署名済みEXEとして扱わないでください。
 
 SignPath承認前は、APIトークンやダミーの組織IDをワークフローへ追加しません。承認後もAPIトークンはGitHub Actions Secretsへ保存し、ログやリポジトリへ出力しないでください。
 
@@ -60,7 +70,7 @@ git diff --check
 git status --short
 ```
 
-パッケージ更新や発行設定の変更では、追加で Release 発行を実行し、生成された EXE が起動することを確認します。
+パッケージ更新や発行設定の変更では、追加でRelease発行を実行し、生成されたEXEが起動することを確認します。Store/MSIX関連の変更では、登録済みIdentityで `Build-StoreMsix.ps1` を実行し、`.msixupload` が生成されることも確認します。
 
 ## 手動回帰チェックリスト
 
