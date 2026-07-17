@@ -1575,7 +1575,14 @@ namespace ScreenCapture
                 return;
             }
 
-            var color = _backgroundColorPicker.SelectedColor;
+            var selectedColor = _backgroundColorPicker.SelectedColor;
+            var color = TextStyleSettings.NormalizeCaptureBackgroundColor(selectedColor);
+            if (color != selectedColor)
+            {
+                _backgroundColorPicker.SelectedColor = color;
+                return;
+            }
+
             var brush = new SolidColorBrush(color);
             _contentLayer.Background = brush;
             TextStyleSettings.CaptureBackgroundColor = color;

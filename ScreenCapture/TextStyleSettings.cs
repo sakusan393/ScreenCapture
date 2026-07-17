@@ -118,13 +118,19 @@ namespace ScreenCapture
 
         public static MediaColor CaptureBackgroundColor
         {
-            get => FromArgb(_data.CaptureBackgroundColorArgb, Colors.Black);
+            get => NormalizeCaptureBackgroundColor(
+                FromArgb(_data.CaptureBackgroundColorArgb, Colors.Black));
             set
             {
-                _data.CaptureBackgroundColorArgb = ToArgb(value);
+                _data.CaptureBackgroundColorArgb = ToArgb(NormalizeCaptureBackgroundColor(value));
                 Save();
             }
         }
+
+        public static MediaColor NormalizeCaptureBackgroundColor(MediaColor color)
+            => color.A == 0
+                ? MediaColor.FromArgb(1, color.R, color.G, color.B)
+                : color;
 
         public static int[] LayerOrder
         {
