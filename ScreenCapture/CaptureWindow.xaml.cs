@@ -795,7 +795,7 @@ namespace ScreenCapture
             di.PreviewMouseLeftButtonDown += (s, e) =>
             {
                 // 他の画像の選択を解除
-                DeselectAllImages();
+                DeselectAllImagesExcept(di);
 
                 // この画像を選択
                 di.Select();
@@ -835,6 +835,17 @@ namespace ScreenCapture
                 }
             }
             _selectedImage = null;
+        }
+
+        private void DeselectAllImagesExcept(DraggableImage selectedImage)
+        {
+            foreach (var child in OverlayCanvas.Children)
+            {
+                if (child is DraggableImage di && di != selectedImage)
+                {
+                    di.Deselect();
+                }
+            }
         }
 
         // すべてのテキストからフォーカスを外す

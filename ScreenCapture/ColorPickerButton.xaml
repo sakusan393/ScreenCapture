@@ -80,12 +80,15 @@
                PopupAnimation="Fade"
                Opened="PickerPopup_Opened"
                Closed="PickerPopup_Closed">
-            <Border Margin="4"
+            <Border x:Name="PickerPopupContent"
+                    Margin="4"
                     Padding="8"
                     Background="#FFF7F7F7"
                     BorderBrush="#FF606060"
                     BorderThickness="1"
-                    CornerRadius="4">
+                    CornerRadius="4"
+                    MouseLeftButtonDown="PickerPopupContent_MouseLeftButtonDown"
+                    MouseLeftButtonUp="PickerPopupContent_MouseLeftButtonUp">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="8"
                                       ShadowDepth="2"

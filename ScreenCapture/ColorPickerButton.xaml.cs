@@ -131,12 +131,22 @@ namespace ScreenCapture
             }
         }
 
+        private void PickerPopupContent_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void PickerPopupContent_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+        }
+
         private void PopupHostWindow_Deactivated(object? sender, EventArgs e)
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 if (PickerPopup.IsOpen
-                    && !Picker.IsMouseOver
+                    && !PickerPopupContent.IsMouseOver
                     && !SwatchButton.IsMouseOver)
                 {
                     PickerPopup.IsOpen = false;
@@ -148,7 +158,7 @@ namespace ScreenCapture
         {
             for (var current = source; current != null; current = VisualTreeHelper.GetParent(current))
             {
-                if (current == this || current == Picker)
+                if (current == this || current == PickerPopupContent)
                 {
                     return true;
                 }
