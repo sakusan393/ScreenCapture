@@ -23,6 +23,8 @@ namespace ScreenCapture
     public partial class CaptureWindow : Window
     {
         private const int LayerZIndexStep = 1000;
+        private const double PasteMargin = 20;
+        private const double PasteCascadeOffset = 24;
         private DraggableText? _selectedText;
         private DraggableImage? _selectedImage;
         private bool _isDraggingWindow;
@@ -769,14 +771,156 @@ namespace ScreenCapture
         // クリップボードから画像を貼り付け
         private void PasteImageFromClipboard()
         {
-            if (Clipboard.ContainsImage())
+            var images = new List<BitmapSource>();
+
+            if (TryGetClipboardImage(out var clipboardImage))
             {
-                var image = Clipboard.GetImage();
-                if (image != null)
+                images.Add(clipboardImage);
+            }
+            else if (Clipboard.ContainsFileDropList())
+            {
+                foreach (string? filePath in Clipboard.GetFileDropList())
                 {
-                    AddImageAt(new WpfPoint(50, 50), image);
+                    if (filePath == null || !IsSupportedImageFile(filePath))
+                    {
+                        continue;
+                    }
+
+                    var image = TryLoadImageFile(filePath);
+                    if (image != null)
+                    {
+                        images.Add(image);
+                    }
                 }
             }
+
+            for (var index = 0; index < images.Count; index++)
+            {
+                AddImageAt(GetPastePosition(index), images[index]);
+            }
+        }
+
+        private static bool TryGetClipboardImage(out BitmapSource image)
+        {
+            image = null!;
+
+            var dataObject = Clipboard.GetDataObject();
+            if (dataObject != null && TryGetEncodedClipboardImage(dataObject, "PNG", out image))
+            {
+                return true;
+            }
+
+            if (!Clipboard.ContainsImage())
+            {
+                return false;
+            }
+
+            // WPF Clipboard.GetImage() は一部の DIB/DIBV5 を BGRA32 として読み込み、
+            // 未使用の alpha=0 を完全透明として扱う。System.Drawing 経由では
+            // 24/32bpp RGB の未使用 alpha が不透明として正規化される。
+            try
+            {
+                using var drawingImage = System.Windows.Forms.Clipboard.GetImage();
+                if (drawingImage != null)
+                {
+                    using var stream = new MemoryStream();
+                    drawingImage.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                    stream.Position = 0;
+                    image = LoadBitmapSource(stream);
+                    return true;
+                }
+            }
+            catch (System.Runtime.InteropServices.ExternalException)
+            {
+                // Clipboard が一時的に別プロセスで使用中の場合は WPF 経路へフォールバックする。
+            }
+
+            var wpfImage = Clipboard.GetImage();
+            if (wpfImage == null)
+            {
+                return false;
+            }
+
+            image = wpfImage;
+            return true;
+        }
+
+        private static bool TryGetEncodedClipboardImage(
+            System.Windows.IDataObject dataObject,
+            string format,
+            out BitmapSource image)
+        {
+            image = null!;
+            if (!dataObject.GetDataPresent(format, false) || dataObject.GetData(format, false) is not Stream source)
+            {
+                return false;
+            }
+
+            try
+            {
+                if (source.CanSeek)
+                {
+                    source.Position = 0;
+                }
+
+                using var copy = new MemoryStream();
+                source.CopyTo(copy);
+                copy.Position = 0;
+                image = LoadBitmapSource(copy);
+                return true;
+            }
+            catch (Exception ex) when (ex is IOException or NotSupportedException or FileFormatException)
+            {
+                return false;
+            }
+        }
+
+        private static BitmapSource LoadBitmapSource(Stream stream)
+        {
+            var decoder = BitmapDecoder.Create(
+                stream,
+                BitmapCreateOptions.PreservePixelFormat,
+                BitmapCacheOption.OnLoad);
+            var image = BitmapFrame.Create(decoder.Frames[0]);
+            image.Freeze();
+            return image;
+        }
+
+        private static bool IsSupportedImageFile(string filePath)
+        {
+            var extension = System.IO.Path.GetExtension(filePath);
+            return extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals(".png", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static BitmapSource? TryLoadImageFile(string filePath)
+        {
+            try
+            {
+                using var stream = new FileStream(
+                    filePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete);
+                return LoadBitmapSource(stream);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException or FileFormatException)
+            {
+                return null;
+            }
+        }
+
+        private WpfPoint GetPastePosition(int index)
+        {
+            var horizontalMargin = Math.Min(PasteMargin, Math.Max(0, _captureWidth / 4));
+            var verticalMargin = Math.Min(PasteMargin, Math.Max(0, _captureHeight / 4));
+            var offset = index % 8 * PasteCascadeOffset;
+            var maxX = Math.Max(horizontalMargin, _captureWidth - horizontalMargin - 50);
+            var maxY = Math.Max(verticalMargin, _captureHeight - verticalMargin - 50);
+            return new WpfPoint(
+                Math.Min(horizontalMargin + offset, maxX),
+                Math.Min(verticalMargin + offset, maxY));
         }
 
         // 画像をCanvasに追加
@@ -786,6 +930,15 @@ namespace ScreenCapture
             DeselectAllImages();
 
             var di = new DraggableImage(image);
+            var horizontalMargin = Math.Min(PasteMargin, Math.Max(0, _captureWidth / 4));
+            var verticalMargin = Math.Min(PasteMargin, Math.Max(0, _captureHeight / 4));
+            var availableWidth = Math.Max(1, _captureWidth - p.X - horizontalMargin);
+            var availableHeight = Math.Max(1, _captureHeight - p.Y - verticalMargin);
+            var scale = Math.Min(
+                1,
+                Math.Min(availableWidth / image.PixelWidth, availableHeight / image.PixelHeight));
+            di.Width = Math.Max(1, image.PixelWidth * scale);
+            di.Height = Math.Max(1, image.PixelHeight * scale);
             Canvas.SetLeft(di, p.X);
             Canvas.SetTop(di, p.Y);
             System.Windows.Controls.Panel.SetZIndex(di, ++_imageZIndex);
