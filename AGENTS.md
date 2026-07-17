@@ -9,6 +9,13 @@
 3. 変更対象の XAML と code-behind をセットで読み、イベント配線と `x:Name` の参照関係を確認する。
 4. 挙動を変更する場合は、必要に応じて `README.md` と `docs/ARCHITECTURE.md` も更新する。
 
+## 別スレッドでStore更新を再開するとき
+
+1. `docs/STORE_UPDATE_PLAYBOOK.md` と `store/release-state.json` を読み、会話履歴ではなくリポジトリに記録された公開版を基準にする。
+2. 修正や機能追加を実装・検証してから、`scripts/Prepare-StoreUpdate.ps1 -Version <MAJOR.MINOR.PATCH>` で次の版とリリースノートを準備する。
+3. Store提出用成果物は `scripts/Build-StoreMsix.ps1` で作り、`.msixupload` などの生成物はコミットしない。
+4. `scripts/Complete-StoreRelease.ps1` は、ユーザーがMicrosoft Storeでの公開完了を確認した後だけ実行する。認定申請中や審査通過前に公開済み状態を進めない。
+
 ## リポジトリの要点
 
 - ソリューション: `ScreenCapture.sln`
@@ -61,5 +68,5 @@ dotnet publish ScreenCapture/ScreenCapture.csproj --configuration Release
 - `README.md`: 利用者向けの機能、操作、導入。
 - `DEVELOPMENT.md`: 開発環境、コマンド、ブランチ運用、検証チェックリスト。
 - `docs/ARCHITECTURE.md`: 実行フロー、責務、座標・レイヤー・設定の設計、既知の制約。
+- `docs/STORE_UPDATE_PLAYBOOK.md`: 別スレッドからの修正、バージョン更新、MSIX提出、公開完了の運用。
 - `ScreenCapture/ICON_SETUP.md`: 現在のアイコン資産と更新方法。
-

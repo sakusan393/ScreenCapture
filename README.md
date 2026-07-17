@@ -114,6 +114,7 @@
 - [アーキテクチャ](docs/ARCHITECTURE.md): 実行フロー、座標、レイヤー、設定、既知の制約
 - [コード署名とRelease運用](docs/CODE_SIGNING.md): 初回Release、SignPath申請、承認後の署名フロー
 - [Microsoft Store 配布](docs/MICROSOFT_STORE.md): MSIX作成、Partner Center、Store提出手順
+- [Microsoft Store 更新プレイブック](docs/STORE_UPDATE_PLAYBOOK.md): 別スレッドから修正、次版作成、Store更新を行う手順
 - [アイコン更新手順](ScreenCapture/ICON_SETUP.md): EXE と通知領域アイコンの更新方法
 
 ## ビルド方法

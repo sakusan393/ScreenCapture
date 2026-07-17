@@ -29,6 +29,7 @@ Set-StrictMode -Version Latest
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $projectPath = Join-Path $repoRoot "ScreenCapture\ScreenCapture.csproj"
 $manifestTemplatePath = Join-Path $repoRoot "store\Package.appxmanifest"
+$releaseStatePath = Join-Path $repoRoot "store\release-state.json"
 $iconSourcePath = Join-Path $repoRoot "ScreenCapture\icon.png"
 
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
@@ -44,7 +45,7 @@ if (-not $OutputDirectory.StartsWith($repoRootFullPath, [System.StringComparison
     throw "OutputDirectory must stay inside the repository: $repoRoot"
 }
 
-foreach ($requiredPath in @($projectPath, $manifestTemplatePath, $iconSourcePath)) {
+foreach ($requiredPath in @($projectPath, $manifestTemplatePath, $releaseStatePath, $iconSourcePath)) {
     if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) {
         throw "Required file was not found: $requiredPath"
     }
@@ -65,6 +66,28 @@ if ($projectVersion -notmatch "^(?<major>\d+)\.(?<minor>\d+)\.(?<build>\d+)$") {
 }
 
 $packageVersion = "$($Matches.major).$($Matches.minor).$($Matches.build).0"
+$releaseState = Get-Content -LiteralPath $releaseStatePath -Raw -Encoding UTF8 | ConvertFrom-Json
+$lastPublishedPackageVersion = [string]$releaseState.lastPublishedPackageVersion
+if ([version]$packageVersion -lt [version]$lastPublishedPackageVersion) {
+    throw "Package version $packageVersion is older than the published Store version $lastPublishedPackageVersion."
+}
+
+if ($PackageIdentityName -ne [string]$releaseState.packageIdentityName) {
+    throw "PackageIdentityName must match store/release-state.json: $($releaseState.packageIdentityName)"
+}
+
+if ($Publisher -ne [string]$releaseState.publisher) {
+    throw "Publisher must match store/release-state.json: $($releaseState.publisher)"
+}
+
+if ($PackageDisplayName -ne [string]$releaseState.productName) {
+    throw "PackageDisplayName must match store/release-state.json: $($releaseState.productName)"
+}
+
+if ($PublisherDisplayName -ne [string]$releaseState.publisherDisplayName) {
+    throw "PublisherDisplayName must match store/release-state.json: $($releaseState.publisherDisplayName)"
+}
+
 $packageBaseName = "ScreenCapture_$($packageVersion)_x64"
 $stagingRoot = Join-Path $OutputDirectory "staging"
 $publishDirectory = Join-Path $stagingRoot "publish"

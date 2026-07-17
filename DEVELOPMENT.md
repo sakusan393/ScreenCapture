@@ -41,6 +41,14 @@ Microsoft Store提出用MSIXの作成:
 
 Store用のIdentityと提出手順は [`docs/MICROSOFT_STORE.md`](docs/MICROSOFT_STORE.md) を参照してください。成果物は `artifacts/store/` に生成され、Gitへコミットしません。
 
+公開後のバグ修正・機能追加では、[`docs/STORE_UPDATE_PLAYBOOK.md`](docs/STORE_UPDATE_PLAYBOOK.md) に従います。現在公開中の版は `store/release-state.json` に記録し、次の版は次のコマンドで準備します。
+
+```powershell
+.\scripts\Prepare-StoreUpdate.ps1 -Version 1.0.4
+```
+
+Partner CenterとMicrosoft Storeで公開完了を確認した後だけ、`Complete-StoreRelease.ps1` で公開済み状態を更新します。
+
 ## GitHub ActionsとRelease
 
 `.github/workflows/build.yml` はPull Request、`main`へのpush、手動実行でDebugビルドとRelease発行を行い、未署名EXEをGitHub Actions Artifactへ保存します。外部Actionはメジャータグではなく検証済みのコミットSHAへ固定します。

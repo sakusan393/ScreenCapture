@@ -19,6 +19,13 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Read Store package version
+        id: package_version
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content ./ScreenCapture/ScreenCapture.csproj -Raw
+          "package_version=$($project.Project.PropertyGroup.Version).0" >> $env:GITHUB_OUTPUT
+
       - name: Build Store submission package
         shell: pwsh
         run: ./scripts/Build-StoreMsix.ps1
@@ -26,7 +33,7 @@ jobs:
       - name: Upload Store package
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: store-ScreenCapture-${{ github.run_number }}
+          name: store-ScreenCapture-${{ steps.package_version.outputs.package_version }}-${{ github.run_number }}
           path: |
             artifacts/store/*.msix
             artifacts/store/*.appxsym
