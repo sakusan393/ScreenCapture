@@ -16,7 +16,7 @@
 
     <!-- アプリケーション情報 -->
     <AssemblyName>ScreenCapture</AssemblyName>
-    <Version>1.0.1</Version>
+    <Version>1.0.3</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Authors>393</Authors>
     <Company>393</Company>
@@ -27,7 +27,14 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
     <!-- アプリケーションアイコン -->
-    <ApplicationIcon>app202620231858.ico</ApplicationIcon>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!--
+      WPF owns the process entry point and app.manifest declares the process-wide
+      DPI mode required by Windows and the Store certification check. WFAC010 is
+      specific to the WinForms bootstrap API, which this WPF application does not use.
+    -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,7 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="app202620231858.ico" />
+    <EmbeddedResource Include="app.ico" />
   </ItemGroup>
 
   <ItemGroup>

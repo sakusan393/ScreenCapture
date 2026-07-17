@@ -2,44 +2,39 @@
 
 ## 現在使われているファイル
 
-- `app202620231858.ico`: EXE の `ApplicationIcon` と埋め込みリソース
-- `icon.png`: 元画像として利用できる PNG
-- `create_icon.ps1`: 簡易なカメラアイコンを `app.ico` として生成する補助スクリプト
+- `icon.png`: 1024 x 1024 pxのマスター画像。Microsoft Store用PNGの生成元でもあります。
+- `app.ico`: EXEと通知領域で使うマルチサイズICOです。
+- `create_icon.ps1`: `icon.png` から `app.ico` を再生成します。
 
-`ScreenCapture.csproj` は `app202620231858.ico` を参照しています。また、`App.xaml.cs` は通知領域アイコンを埋め込みリソース名の末尾 `app202620231858.ico` で検索します。アイコン名を変更する場合は、この 2 ファイルを同時に更新してください。
+`ScreenCapture.csproj` は `app.ico` をアプリケーションアイコンおよび埋め込みリソースとして参照します。`App.xaml.cs` は同じ埋め込みリソースを通知領域アイコンに使用します。
 
-## 推奨する更新手順
+## 更新手順
 
-1. 256 x 256 px を含む複数解像度の ICO を用意する。
-2. 既存の `app202620231858.ico` を置き換える。
-3. リポジトリルートで Debug ビルドする。
-4. EXE と通知領域の両方で新しいアイコンを確認する。
-
-```powershell
-dotnet build ScreenCapture.sln --configuration Debug
-```
-
-Debug の出力先は通常、次のディレクトリです。
-
-```text
-ScreenCapture\bin\Debug\net8.0-windows\win-x64\
-```
-
-Windows のアイコンキャッシュにより、エクスプローラー上の表示がすぐ更新されない場合があります。EXE のプロパティまたは通知領域でも確認してください。
-
-## 補助スクリプトを使う場合
-
-`create_icon.ps1` は現状 `ScreenCapture/app.ico` を生成し、プロジェクトが参照する名前とは異なります。
+1. 正方形のマスター画像で `icon.png` を置き換えます。1024 x 1024 pxを推奨します。
+2. ImageMagickをインストールし、`magick` コマンドをPATHから実行可能にします。
+3. 次のコマンドでICOを再生成します。
 
 ```powershell
 Set-Location ScreenCapture
 .\create_icon.ps1
 ```
 
-生成内容を確認した後、採用する場合は `app.ico` を `app202620231858.ico` として置き換えるか、次の参照をすべて新しい名前へ変更します。
+生成される `app.ico` には、16、20、24、32、40、48、64、128、256 pxの画像が含まれます。
 
-- `ScreenCapture.csproj` の `<ApplicationIcon>`
-- `ScreenCapture.csproj` の `<EmbeddedResource>`
-- `App.xaml.cs` の埋め込みリソース検索とフォールバックファイル名
+Microsoft Store用の `StoreLogo.png`、`Square44x44Logo.png`、`Square150x150Logo.png` は、Storeパッケージ生成時に `icon.png` から自動生成されます。
 
-`create_icon.ps1` は簡易生成用です。Windows の複数サイズを確実に含む配布用 ICO は、専用の画像編集・変換ツールで作成することを推奨します。外部素材を使う場合はライセンスも確認してください。
+## 確認
+
+リポジトリルートでDebugビルドし、EXEと通知領域の両方で新しいアイコンを確認します。
+
+```powershell
+dotnet build ScreenCapture.sln --configuration Debug
+```
+
+Debug出力先は通常、次のディレクトリです。
+
+```text
+ScreenCapture\bin\Debug\net8.0-windows\win-x64\
+```
+
+Windowsのアイコンキャッシュにより、エクスプローラー上の表示がすぐ更新されない場合があります。その場合は、EXEのプロパティまたは通知領域でも確認してください。

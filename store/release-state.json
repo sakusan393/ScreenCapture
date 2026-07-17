@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "distribution": "Microsoft Store (MSIX)",
+  "productName": "393 ScreenCapture",
+  "packageIdentityName": "393.393ScreenCapture",
+  "publisher": "CN=6F9032AC-F4A1-4304-8FB0-9E12219A5335",
+  "publisherDisplayName": "393",
+  "architecture": "x64",
+  "minimumWindowsVersion": "10.0.19041.0",
+  "lastPublishedProjectVersion": "1.0.3",
+  "lastPublishedPackageVersion": "1.0.3.0",
+  "lastPublishedDate": "2026-07-17"
+}

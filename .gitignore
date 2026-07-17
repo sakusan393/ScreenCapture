@@ -22,6 +22,9 @@ mono_crash.*
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
+# Store release notes are source-controlled operational records.
+!store/releases/
+!store/releases/*.md
 x64/
 x86/
 [Ww][Ii][Nn]32/
@@ -238,6 +241,8 @@ _pkginfo.txt
 *.appx
 *.appxbundle
 *.appxupload
+*.appxsym
+*.msixupload
 
 # Visual Studio cache files
 # files ending in .cache can be ignored

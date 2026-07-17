@@ -10,6 +10,10 @@ Once the project is accepted, signed releases use the following service:
 > Free code signing provided by [SignPath.io](https://signpath.io/), certificate
 > by [SignPath Foundation](https://signpath.org/).
 
+Microsoft Store packages follow a separate distribution path. After Store
+certification, Microsoft signs the submitted MSIX package. Store-signed MSIX
+packages are not described as SignPath-signed releases.
+
 ## Team roles
 
 - Committer and reviewer: [393](https://393.bz/) ([sakusan393](https://github.com/sakusan393))

@@ -196,7 +196,7 @@ namespace ScreenCapture
                 // まず埋め込みリソースから読み込みを試行
                 var assembly = System.Reflection.Assembly.GetExecutingAssembly();
                 var resourceNames = assembly.GetManifestResourceNames();
-                var iconResourceName = resourceNames.FirstOrDefault(r => r.EndsWith("app202620231858.ico"));
+                var iconResourceName = resourceNames.FirstOrDefault(r => r.EndsWith("app.ico"));
                 
                 if (iconResourceName != null)
                 {
@@ -212,7 +212,7 @@ namespace ScreenCapture
                 // 埋め込みリソースから読み込めなかった場合、ファイルから読み込みを試行
                 if (icon == null)
                 {
-                    var iconPath = System.IO.Path.Combine(AppContext.BaseDirectory, "app202620231858.ico");
+                    var iconPath = System.IO.Path.Combine(AppContext.BaseDirectory, "app.ico");
                     if (System.IO.File.Exists(iconPath))
                     {
                         icon = new System.Drawing.Icon(iconPath);
