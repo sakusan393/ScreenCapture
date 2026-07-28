@@ -51,7 +51,16 @@ ScreenCaptureは既存のWPFデスクトップアプリをMSIXへ格納するた
 
 この宣言は管理者権限を要求するものではありません。アプリは通常ユーザーの `mediumIL` で動作します。
 
-## 4. Store掲載情報
+## 4. サインイン時の自動起動
+
+Store版は、MSIXの `windows.startupTask` とWindowsの `StartupTask` APIを使用します。インストール時の初期状態は無効で、ユーザーが通知領域メニューの **Windowsへのサインイン時に起動** を選んだ場合だけ有効にします。
+
+- 独自のレジストリ登録やスタートアップフォルダーは使用しない。
+- インストール直後に自動で有効化するrestricted capabilityは要求しない。
+- Windowsの「スタートアップ アプリ」とタスクマネージャーで変更された状態を尊重する。
+- サインイン起動では範囲選択画面を出さず、通知領域にだけ常駐する。
+
+## 5. Store掲載情報
 
 最低限、次を用意します。
 
@@ -63,16 +72,17 @@ ScreenCaptureは既存のWPFデスクトップアプリをMSIXへ格納するた
 - プライバシーポリシーURL: `https://github.com/sakusan393/ScreenCapture/blob/main/PRIVACY.md`
 - ライセンス情報: `https://github.com/sakusan393/ScreenCapture/blob/main/LICENSE`
 
-## 5. 提出前の確認
+## 6. 提出前の確認
 
 - `ScreenCapture.csproj` のバージョンとMSIXの4桁バージョンが対応している。
 - `Package/Identity/Name`、`Publisher`、予約した製品名がPartner Centerの表示と完全一致している。
 - x64版のWindows 10およびWindows 11で起動できる。
 - 範囲選択、ウィンドウキャプチャ、コピー、保存、通知領域、グローバルホットキーを確認する。
+- 自動起動の初期状態が無効で、通知領域メニューから有効化・無効化でき、サインイン起動では範囲選択画面が表示されないことを確認する。
 - アプリが管理者権限を要求しない。
 - Store提出フォームのrestricted capability欄で `runFullTrust` の用途を説明する。
 
-## 6. 公開後の更新
+## 7. 公開後の更新
 
 Partner Centerの製品概要で **更新を開始** を選ぶと、前回の申請情報を引き継いだ更新申請が作成されます。更新版では公開中より大きいパッケージバージョンを使用し、認定後は既存ユーザーへMicrosoft Store経由で配信されます。
 
@@ -85,3 +95,4 @@ Partner Centerの製品概要で **更新を開始** を選ぶと、前回の申
 - [Publish update to your MSIX app on the Store](https://learn.microsoft.com/windows/apps/publish/publish-your-app/msix/publish-update-to-your-app-on-store)
 - [Generating MSIX package components](https://learn.microsoft.com/windows/msix/desktop/desktop-to-uwp-manual-conversion)
 - [App capability declarations](https://learn.microsoft.com/windows/apps/package-and-deploy/app-capability-declarations)
+- [Integrate a desktop app with Windows using packaging extensions](https://learn.microsoft.com/windows/apps/desktop/modernize/desktop-to-uwp-extensions)

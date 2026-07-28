@@ -61,6 +61,7 @@
 - **Esc**キーで現在の編集画面を閉じる、または範囲選択をキャンセル（アプリは通知領域で動作を継続）
 - 最小化
 - **マウスホイール**でキャプチャウィンドウの透明度を変更（ほぼ完全透明まで可能）
+- Microsoft Store版では、通知領域メニューの **Windowsへのサインイン時に起動** から自動起動を明示的にON/OFF（サインイン時は範囲選択画面を出さず、通知領域にだけ常駐）
 
 ## 使い方
 
@@ -103,6 +104,7 @@
 
 - タスクトレイ（通知領域）のアイコンを右クリック
 - **Hotkey Settings...** からホットキーを有効化・変更
+- Microsoft Store版では **Windowsへのサインイン時に起動** から自動起動をON/OFF（Windowsの設定とタスクマネージャーからも変更できます）
 - **Third-party Licenses...** から埋め込みフォントとカラーピッカーのライセンスを表示
 - ホットキー有効時は設定したキーでキャプチャを起動
 
@@ -143,7 +145,7 @@ dotnet run --project ScreenCapture/ScreenCapture.csproj
 
 # 実行用EXEの作成
 dotnet publish ScreenCapture/ScreenCapture.csproj --configuration Release
-# 出力: ScreenCapture\bin\Release\net8.0-windows\win-x64\publish\ScreenCapture.exe
+# 出力: ScreenCapture\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\ScreenCapture.exe
 
 # Microsoft Store提出用MSIXの作成
 .\scripts\Build-StoreMsix.ps1

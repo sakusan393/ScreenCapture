@@ -69,4 +69,40 @@
   <data name="TextBackgroundColorToolTip" xml:space="preserve">
     <value>Text background color</value>
   </data>
+  <data name="TrayToolTip" xml:space="preserve">
+    <value>ScreenCapture - Right-click for settings</value>
+  </data>
+  <data name="TrayHotkeyStatus" xml:space="preserve">
+    <value>Hotkey: {0}+{1}</value>
+  </data>
+  <data name="TrayScreenCapture" xml:space="preserve">
+    <value>Screen Capture</value>
+  </data>
+  <data name="TrayHotkeySettings" xml:space="preserve">
+    <value>Hotkey Settings...</value>
+  </data>
+  <data name="TrayStartWithWindows" xml:space="preserve">
+    <value>Start with Windows</value>
+  </data>
+  <data name="TrayStartupChecking" xml:space="preserve">
+    <value>Checking startup setting...</value>
+  </data>
+  <data name="TrayThirdPartyLicenses" xml:space="preserve">
+    <value>Third-party Licenses...</value>
+  </data>
+  <data name="TrayExit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="StartupDisabledByUser" xml:space="preserve">
+    <value>Windows has disabled startup for this app. Open Startup apps in Windows Settings to enable it again?</value>
+  </data>
+  <data name="StartupDisabledByPolicy" xml:space="preserve">
+    <value>Startup for this app is managed by your organization and cannot be changed here.</value>
+  </data>
+  <data name="StartupSettingsTitle" xml:space="preserve">
+    <value>Start with Windows</value>
+  </data>
+  <data name="StartupChangeFailed" xml:space="preserve">
+    <value>The startup setting could not be changed.</value>
+  </data>
 </root>

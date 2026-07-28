@@ -8,11 +8,15 @@ ScreenCapture は、画面の一部またはウィンドウを取得し、常に
 
 ```mermaid
 flowchart LR
-    Start["App startup"] --> Mutex{"First process?"}
+    Start["App startup"] --> Activation{"--startup?"}
+    Activation --> Mutex{"First process?"}
     Mutex -->|Yes| Resident["Hidden window / tray icon / hotkey"]
-    Mutex -->|No| Pipe["Named pipe: capture"]
-    Pipe --> Resident
-    Resident --> Select["SelectionOverlayWindow"]
+    Mutex -->|No, normal launch| Pipe["Named pipe: capture"]
+    Mutex -->|No, sign-in launch| Exit["Exit without capture"]
+    Pipe --> Select["SelectionOverlayWindow"]
+    Resident -->|Normal launch| Select
+    Resident -->|Windows sign-in| TrayOnly["Wait in notification area"]
+    TrayOnly -->|Tray / hotkey| Select
     Select -->|Drag or Ctrl+click| Capture["Screen bitmap"]
     Capture --> Edit["CaptureWindow"]
     Edit --> Output["Clipboard or PNG file"]
@@ -34,6 +38,7 @@ flowchart LR
 | `ThirdPartyLicensesWindow` | EXE に埋め込まれた第三者ライセンス本文の表示 |
 | `HotKeyManager` | `RegisterHotKey` / `UnregisterHotKey` と `WM_HOTKEY` の橋渡し |
 | `HotKeySettings` | ホットキー設定 JSON の読み書き |
+| `StartupTaskService` | Store版の `StartupTask` 状態取得と、ユーザー操作による有効化・無効化 |
 | `TextStyleSettings` | 注釈、ペイント、枠、背景、レイヤー順の設定 JSON の読み書き |
 
 ## アプリケーションのライフサイクル
@@ -43,6 +48,9 @@ flowchart LR
 - 最初のプロセスは名前付きパイプの待受を開始し、Win32 メッセージを受ける非表示 WPF ウィンドウと通知領域アイコンを作成します。
 - 2 つ目のプロセスは `ScreenCapture.SingleInstancePipe` へ `capture` を送り、終了します。
 - ホットキー、通知領域、2 つ目の起動のいずれも、既存プロセスで新しい `SelectionOverlayWindow` を開きます。
+- Store版の `windows.startupTask` は初期状態を無効とし、通知領域メニューのユーザー操作だけで有効化します。状態は独自設定へ複製せず、Windowsの `StartupTaskState` を正とします。
+- サインイン起動ではMSIXが `--startup` を渡します。この場合は範囲選択画面を開かず、通知領域、非表示ウィンドウ、ホットキーだけを初期化します。すでにプロセスが常駐している場合も、`--startup` 起動はキャプチャ開始を通知しません。
+- タスクマネージャーで無効化された `DisabledByUser` はAPIから再有効化せず、Windowsの「スタートアップ アプリ」設定へ案内します。組織ポリシーで管理される状態も上書きしません。
 - キャプチャ編集ウィンドウを閉じてもアプリは通知領域に残ります。終了は通知領域の `Exit` が担当します。
 
 グローバルホットキーは非表示ウィンドウの HWND へ登録されます。登録に失敗した場合は設定を無効化し、メニュー表示を更新します。
@@ -210,4 +218,4 @@ PNG のクリップボード形式がある場合はエンコード済みデー�
 - 設定、単一起動、ホットキー周辺には例外を記録しない catch があり、障害解析が難しい。
 - `MainWindow` と未使用の起動補助メソッドが残っている。削除時は XAML の Application 設定と起動経路を再確認する。
 - GitHub Actionsはビルドと初回未署名Releaseまでを自動化している。SignPathの署名要求と署名済みArtifactへの差し替えは、Foundation承認後に組織固有の設定を使って追加する。
-- Microsoft Store版は、自己完結のx64発行物をfull-trust desktop MSIXへ格納する。`runFullTrust` は画面キャプチャ、グローバルホットキー、通知領域、クリップボードなど既存のWin32経路を維持するために必要だが、実行整合性レベルは `mediumIL` で管理者権限を要求しない。Store IdentityはPartner Centerの値をビルド時に注入する。
+- Microsoft Store版は、自己完結のx64発行物をfull-trust desktop MSIXへ格納する。`runFullTrust` は画面キャプチャ、グローバルホットキー、通知領域、クリップボードなど既存のWin32経路を維持するために必要だが、実行整合性レベルは `mediumIL` で管理者権限を要求しない。Store IdentityはPartner Centerの値をビルド時に注入する。`windows.startupTask` はユーザー設定可能な通常の拡張として宣言し、インストール時に強制登録するrestricted capabilityは使用しない。

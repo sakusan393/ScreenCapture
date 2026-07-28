@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Forms;
+using ScreenCapture.Localization;
 using Application = System.Windows.Application;
 
 namespace ScreenCapture
@@ -15,14 +17,21 @@ namespace ScreenCapture
 
         private HotKeyManager? _hotKeyManager;
         private NotifyIcon? _notifyIcon;
+        private ToolStripMenuItem? _startupMenuItem;
         private Window? _hiddenWindow;
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            var launchedAtStartup = e.Args.Any(
+                argument => string.Equals(argument, "--startup", StringComparison.OrdinalIgnoreCase));
+
             _singleInstanceMutex = new System.Threading.Mutex(true, SingleInstanceMutexName, out var createdNew);
             if (!createdNew)
             {
-                SignalExistingInstance();
+                if (!launchedAtStartup)
+                {
+                    SignalExistingInstance();
+                }
                 Shutdown();
                 return;
             }
@@ -50,8 +59,11 @@ namespace ScreenCapture
                 InitializeHotKey();
             }
 
-            // 起動したら即、範囲選択オーバーレイを出す
-            ShowSelectionOverlay();
+            // 通常起動では範囲選択を開始し、Windowsサインイン時は通知領域にだけ常駐する
+            if (!launchedAtStartup)
+            {
+                ShowSelectionOverlay();
+            }
         }
 
         private void InitializeHotKey()
@@ -227,7 +239,7 @@ namespace ScreenCapture
             _notifyIcon = new NotifyIcon
             {
                 Icon = icon ?? System.Drawing.SystemIcons.Application,
-                Text = "ScreenCapture - Right-click for settings",
+                Text = AppStrings.TrayToolTip,
                 Visible = true
             };
 
@@ -243,7 +255,11 @@ namespace ScreenCapture
             // ホットキーの状態を表示
             if (HotKeySettings.IsEnabled)
             {
-                var hotkeyInfo = new ToolStripMenuItem($"Hotkey: {HotKeySettings.Modifiers}+{HotKeySettings.Key}")
+                var hotkeyInfo = new ToolStripMenuItem(
+                    AppStrings.Format(
+                        AppStrings.TrayHotkeyStatus,
+                        HotKeySettings.Modifiers,
+                        HotKeySettings.Key))
                 {
                     Enabled = false
                 };
@@ -251,31 +267,137 @@ namespace ScreenCapture
                 contextMenu.Items.Add(new ToolStripSeparator());
             }
             
-            var captureItem = new ToolStripMenuItem("Screen Capture");
+            var captureItem = new ToolStripMenuItem(AppStrings.TrayScreenCapture);
             captureItem.Click += (s, e) => ShowSelectionOverlay();
             contextMenu.Items.Add(captureItem);
 
             contextMenu.Items.Add(new ToolStripSeparator());
 
-            var settingsItem = new ToolStripMenuItem("Hotkey Settings...");
+            var settingsItem = new ToolStripMenuItem(AppStrings.TrayHotkeySettings);
             settingsItem.Click += (s, e) => ShowHotKeySettings();
             contextMenu.Items.Add(settingsItem);
 
+            if (StartupTaskService.IsAvailable)
+            {
+                _startupMenuItem = new ToolStripMenuItem(AppStrings.TrayStartupChecking)
+                {
+                    Enabled = false
+                };
+                _startupMenuItem.Click += OnStartupMenuItemClick;
+                contextMenu.Items.Add(_startupMenuItem);
+            }
+            else
+            {
+                _startupMenuItem = null;
+            }
+
             contextMenu.Items.Add(new ToolStripSeparator());
 
-            var licensesItem = new ToolStripMenuItem("Third-party Licenses...");
+            var licensesItem = new ToolStripMenuItem(AppStrings.TrayThirdPartyLicenses);
             licensesItem.Click += (s, e) => ShowThirdPartyLicenses();
             contextMenu.Items.Add(licensesItem);
 
             contextMenu.Items.Add(new ToolStripSeparator());
 
-            var exitItem = new ToolStripMenuItem("Exit");
+            var exitItem = new ToolStripMenuItem(AppStrings.TrayExit);
             exitItem.Click += (s, e) => Shutdown();
             contextMenu.Items.Add(exitItem);
 
             if (_notifyIcon != null)
             {
                 _notifyIcon.ContextMenuStrip = contextMenu;
+            }
+
+            if (_startupMenuItem != null)
+            {
+                RefreshStartupMenuItemAsync(_startupMenuItem);
+            }
+        }
+
+        private async void RefreshStartupMenuItemAsync(ToolStripMenuItem startupMenuItem)
+        {
+            try
+            {
+                var state = await StartupTaskService.GetStateAsync();
+                if (!ReferenceEquals(_startupMenuItem, startupMenuItem))
+                {
+                    return;
+                }
+
+                startupMenuItem.Text = AppStrings.TrayStartWithWindows;
+                startupMenuItem.Checked =
+                    state == global::Windows.ApplicationModel.StartupTaskState.Enabled ||
+                    state == global::Windows.ApplicationModel.StartupTaskState.EnabledByPolicy;
+                startupMenuItem.Enabled = true;
+            }
+            catch
+            {
+                if (ReferenceEquals(_startupMenuItem, startupMenuItem))
+                {
+                    startupMenuItem.Text = AppStrings.TrayStartWithWindows;
+                    startupMenuItem.Enabled = false;
+                }
+            }
+        }
+
+        private async void OnStartupMenuItemClick(object? sender, EventArgs e)
+        {
+            if (sender is not ToolStripMenuItem startupMenuItem)
+            {
+                return;
+            }
+
+            startupMenuItem.Enabled = false;
+
+            try
+            {
+                var state = await StartupTaskService.GetStateAsync();
+                switch (state)
+                {
+                    case global::Windows.ApplicationModel.StartupTaskState.Enabled:
+                        await StartupTaskService.SetEnabledAsync(false);
+                        break;
+
+                    case global::Windows.ApplicationModel.StartupTaskState.Disabled:
+                        await StartupTaskService.SetEnabledAsync(true);
+                        break;
+
+                    case global::Windows.ApplicationModel.StartupTaskState.DisabledByUser:
+                        var result = System.Windows.MessageBox.Show(
+                            AppStrings.StartupDisabledByUser,
+                            AppStrings.StartupSettingsTitle,
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Information);
+                        if (result == MessageBoxResult.Yes)
+                        {
+                            Process.Start(new ProcessStartInfo("ms-settings:startupapps")
+                            {
+                                UseShellExecute = true
+                            });
+                        }
+                        break;
+
+                    case global::Windows.ApplicationModel.StartupTaskState.DisabledByPolicy:
+                    case global::Windows.ApplicationModel.StartupTaskState.EnabledByPolicy:
+                        System.Windows.MessageBox.Show(
+                            AppStrings.StartupDisabledByPolicy,
+                            AppStrings.StartupSettingsTitle,
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                        break;
+                }
+            }
+            catch
+            {
+                System.Windows.MessageBox.Show(
+                    AppStrings.StartupChangeFailed,
+                    AppStrings.StartupSettingsTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+            finally
+            {
+                RefreshStartupMenuItemAsync(startupMenuItem);
             }
         }
 

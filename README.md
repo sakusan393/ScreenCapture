@@ -64,6 +64,7 @@ A Windows screenshot tool with text annotations, image overlays, and painting to
 - Press **Esc** to close the current editor or cancel area selection. The application continues running in the notification area.
 - Minimize the capture editor.
 - Use the **mouse wheel** to change capture-window opacity, including near-transparent values.
+- In the Microsoft Store version, choose **Start with Windows** from the notification-area menu to opt in to automatic startup. Sign-in startup stays quietly in the notification area without opening the capture overlay.
 
 ## Usage
 
@@ -106,6 +107,7 @@ A Windows screenshot tool with text annotations, image overlays, and painting to
 
 - Right-click the notification-area icon.
 - Select **Hotkey Settings...** to enable or change the global hotkey.
+- In the Microsoft Store version, select **Start with Windows** to enable or disable sign-in startup. Windows Settings and Task Manager remain in control of this setting.
 - Select **Third-party Licenses...** to view the licenses for the embedded font and color picker.
 - When enabled, the configured hotkey starts a new capture.
 
@@ -146,7 +148,7 @@ dotnet run --project ScreenCapture/ScreenCapture.csproj
 
 # Publish the executable
 dotnet publish ScreenCapture/ScreenCapture.csproj --configuration Release
-# Output: ScreenCapture\bin\Release\net8.0-windows\win-x64\publish\ScreenCapture.exe
+# Output: ScreenCapture\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\ScreenCapture.exe
 
 # Build the Microsoft Store MSIX submission package
 .\scripts\Build-StoreMsix.ps1

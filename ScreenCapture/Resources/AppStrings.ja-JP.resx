@@ -69,4 +69,40 @@
   <data name="TextBackgroundColorToolTip" xml:space="preserve">
     <value>背景色</value>
   </data>
+  <data name="TrayToolTip" xml:space="preserve">
+    <value>ScreenCapture - 右クリックで設定</value>
+  </data>
+  <data name="TrayHotkeyStatus" xml:space="preserve">
+    <value>ホットキー: {0}+{1}</value>
+  </data>
+  <data name="TrayScreenCapture" xml:space="preserve">
+    <value>画面をキャプチャ</value>
+  </data>
+  <data name="TrayHotkeySettings" xml:space="preserve">
+    <value>ホットキー設定...</value>
+  </data>
+  <data name="TrayStartWithWindows" xml:space="preserve">
+    <value>Windowsへのサインイン時に起動</value>
+  </data>
+  <data name="TrayStartupChecking" xml:space="preserve">
+    <value>スタートアップ設定を確認中...</value>
+  </data>
+  <data name="TrayThirdPartyLicenses" xml:space="preserve">
+    <value>サードパーティ ライセンス...</value>
+  </data>
+  <data name="TrayExit" xml:space="preserve">
+    <value>終了</value>
+  </data>
+  <data name="StartupDisabledByUser" xml:space="preserve">
+    <value>このアプリの自動起動はWindows側で無効にされています。再度有効にするため、Windowsの「スタートアップ アプリ」設定を開きますか？</value>
+  </data>
+  <data name="StartupDisabledByPolicy" xml:space="preserve">
+    <value>このアプリの自動起動は組織によって管理されているため、ここでは変更できません。</value>
+  </data>
+  <data name="StartupSettingsTitle" xml:space="preserve">
+    <value>Windowsへのサインイン時に起動</value>
+  </data>
+  <data name="StartupChangeFailed" xml:space="preserve">
+    <value>スタートアップ設定を変更できませんでした。</value>
+  </data>
 </root>

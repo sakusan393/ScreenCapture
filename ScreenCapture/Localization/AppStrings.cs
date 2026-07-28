@@ -27,6 +27,18 @@ namespace ScreenCapture.Localization
         public static string DecreaseTextSizeToolTip => GetString(nameof(DecreaseTextSizeToolTip));
         public static string TextColorToolTip => GetString(nameof(TextColorToolTip));
         public static string TextBackgroundColorToolTip => GetString(nameof(TextBackgroundColorToolTip));
+        public static string TrayToolTip => GetString(nameof(TrayToolTip));
+        public static string TrayHotkeyStatus => GetString(nameof(TrayHotkeyStatus));
+        public static string TrayScreenCapture => GetString(nameof(TrayScreenCapture));
+        public static string TrayHotkeySettings => GetString(nameof(TrayHotkeySettings));
+        public static string TrayStartWithWindows => GetString(nameof(TrayStartWithWindows));
+        public static string TrayStartupChecking => GetString(nameof(TrayStartupChecking));
+        public static string TrayThirdPartyLicenses => GetString(nameof(TrayThirdPartyLicenses));
+        public static string TrayExit => GetString(nameof(TrayExit));
+        public static string StartupDisabledByUser => GetString(nameof(StartupDisabledByUser));
+        public static string StartupDisabledByPolicy => GetString(nameof(StartupDisabledByPolicy));
+        public static string StartupSettingsTitle => GetString(nameof(StartupSettingsTitle));
+        public static string StartupChangeFailed => GetString(nameof(StartupChangeFailed));
 
         public static string Format(string format, params object[] args)
             => string.Format(CultureInfo.CurrentCulture, format, args);

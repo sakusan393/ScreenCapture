@@ -31,7 +31,7 @@ Release 発行:
 dotnet publish ScreenCapture/ScreenCapture.csproj --configuration Release
 ```
 
-プロジェクトには `win-x64`、自己完結、単一ファイル発行が設定されています。発行先は通常 `ScreenCapture/bin/Release/net8.0-windows/win-x64/publish/` です。
+プロジェクトには `win-x64`、自己完結、単一ファイル発行が設定されています。Windows Runtime APIの対象はMSIXと同じWindows 10 build 19041以降で、発行先は通常 `ScreenCapture/bin/Release/net8.0-windows10.0.19041.0/win-x64/publish/` です。
 
 Microsoft Store提出用MSIXの作成:
 
@@ -90,6 +90,9 @@ git status --short
 - 2 回目の起動では別プロセスが常駐せず、既存プロセスへキャプチャ開始が通知される。
 - タスクトレイのダブルクリックと「Screen Capture」で範囲選択を開始できる。
 - ホットキーを有効化・変更・無効化でき、アプリ再起動後も設定が残る。
+- Store版では通知領域メニューから「Windowsへのサインイン時に起動」を有効化・無効化でき、Windowsの「スタートアップ アプリ」と状態が一致する。
+- `--startup`付きのサインイン起動では範囲選択画面を表示せず、通知領域にだけ常駐する。
+- タスクマネージャーで自動起動を無効化した後はアプリが勝手に再有効化せず、Windowsの設定画面へ案内する。
 - 「Exit」で常駐プロセスが終了する。
 
 ### キャプチャ
