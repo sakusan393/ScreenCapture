@@ -42,8 +42,7 @@
                                  HorizontalAlignment="Right"
                                  VerticalAlignment="Top"
                                  Visibility="Collapsed"
-                                 Panel.ZIndex="1000"
-                                 ToolTip="枠線の色を変更"/>
+                                 Panel.ZIndex="1000"/>
 
         <local:ColorPickerButton x:Name="BackgroundColorPicker"
                                  Width="30"
@@ -52,8 +51,7 @@
                                  HorizontalAlignment="Right"
                                  VerticalAlignment="Top"
                                  Visibility="Collapsed"
-                                 Panel.ZIndex="1000"
-                                 ToolTip="背景色を変更"/>
+                                 Panel.ZIndex="1000"/>
 
         <Button x:Name="MinimizeButton"
                 Width="30" Height="30"
@@ -68,7 +66,6 @@
                 Margin="0,5,40,0"
                 Visibility="Collapsed"
                 Panel.ZIndex="1000"
-                ToolTip="最小化"
                 Padding="0">
             <Button.Template>
                 <ControlTemplate TargetType="Button">
@@ -100,7 +97,6 @@
                 Margin="0,5,5,0"
                 Visibility="Collapsed"
                 Panel.ZIndex="1000"
-                ToolTip="ウィンドウを閉じる"
                 Padding="0">
             <Button.Template>
                 <ControlTemplate TargetType="Button">

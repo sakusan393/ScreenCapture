@@ -5,6 +5,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using ScreenCapture.Localization;
 using Forms = System.Windows.Forms;
 using MediaColor = System.Windows.Media.Color;
 
@@ -26,6 +27,11 @@ namespace ScreenCapture
         public DraggableText()
         {
             InitializeComponent();
+
+            FontSizeUpButton.ToolTip = AppStrings.IncreaseTextSizeToolTip;
+            FontSizeDownButton.ToolTip = AppStrings.DecreaseTextSizeToolTip;
+            TextColorPicker.ToolTip = AppStrings.TextColorToolTip;
+            TextBackgroundPicker.ToolTip = AppStrings.TextBackgroundColorToolTip;
 
             TextBox.BorderBrush = System.Windows.Media.Brushes.Transparent;
 

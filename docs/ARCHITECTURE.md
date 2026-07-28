@@ -152,6 +152,12 @@ PNG のクリップボード形式がある場合はエンコード済みデー�
 
 現在の `SaveAsImage` はダイアログに JPEG 拡張子も表示しますが、実際には常に `PngBitmapEncoder` を使用します。形式対応を拡張する場合は、拡張子と encoder を一致させ、透過背景の扱いも決めてください。
 
+## UI のローカライズ
+
+ユーザー向けのローカライズ対象文字列は `Resources/AppStrings.resx` を英語の基準リソース、`Resources/AppStrings.ja-JP.resx` を日本語リソースとして管理します。`Localization/AppStrings.cs` が `CurrentUICulture` に対応する値を取得し、対応リソースがない表示言語では英語へフォールバックします。
+
+コードや XAML に新しいユーザー向け文言を追加するときは、両方のリソースへ同じキーを追加します。コメント、内部識別子、ショートカット表記など翻訳不要の文字列はリソース化しません。MSIX の対応言語は `store/Package.appxmanifest` の `Resources` と一致させます。
+
 ## 設定の永続化
 
 設定ディレクトリは `%APPDATA%\ScreenCapture` です。
