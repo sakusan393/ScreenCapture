@@ -18,7 +18,7 @@ ScreenCaptureでは次の公開Identityを使用します。APIキーやパス�
 - `Package/Identity/Publisher`: `CN=6F9032AC-F4A1-4304-8FB0-9E12219A5335`
 - `Package/Properties/PublisherDisplayName`: `393`
 
-パッケージの対応言語は、現在のアプリUIに合わせて日本語 (`ja-jp`) のみを宣言します。英語UIを実装した時点で `en-us` と英語のStore登録情報を追加します。
+パッケージは英語 (`en-us`) を既定言語、日本語 (`ja-jp`) を追加言語として宣言します。Partner Centerでも日本語と英語のStore登録情報を用意し、アプリUIと掲載情報の対応言語を一致させます。
 
 アプリ名を予約する前に、推測した値や仮の値でStore提出用パッケージを作らないでください。MSIXのIdentityはPartner Centerの値と完全に一致する必要があります。
 
@@ -55,7 +55,7 @@ ScreenCaptureは既存のWPFデスクトップアプリをMSIXへ格納するた
 
 最低限、次を用意します。
 
-- 日本語の製品名、短い説明、詳細説明
+- 日本語と英語の製品名、短い説明、詳細説明
 - アプリアイコン（Store掲載用は300×300推奨）
 - 実際の画面を示すスクリーンショット
 - カテゴリと年齢区分

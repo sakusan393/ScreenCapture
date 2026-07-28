@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using ScreenCapture.Localization;
 using Clipboard = System.Windows.Clipboard;
 using Cursors = System.Windows.Input.Cursors;
 using MessageBox = System.Windows.MessageBox;
@@ -92,6 +93,11 @@ namespace ScreenCapture
         public CaptureWindow(BitmapSource image, System.Drawing.Point screenLocation)
         {
             InitializeComponent();
+
+            FrameColorPicker.ToolTip = AppStrings.ChangeFrameColorToolTip;
+            BackgroundColorPicker.ToolTip = AppStrings.ChangeBackgroundColorToolTip;
+            MinimizeButton.ToolTip = AppStrings.MinimizeToolTip;
+            CloseButton.ToolTip = AppStrings.CloseWindowToolTip;
 
             InitializeLayerOrder();
 
@@ -672,25 +678,25 @@ namespace ScreenCapture
             // 右クリックメニュー等の初期化
             var menu = new ContextMenu();
 
-            var add = new MenuItem { Header = "テキスト追加" };
+            var add = new MenuItem { Header = AppStrings.ContextMenuAddText };
             add.Click += (_, __) => AddTextAt(Mouse.GetPosition(OverlayCanvas));
             menu.Items.Add(add);
 
             menu.Items.Add(new Separator());
 
-            var pasteImage = new MenuItem { Header = "画像を貼り付け (Ctrl+V)" };
+            var pasteImage = new MenuItem { Header = AppStrings.ContextMenuPasteImage };
             pasteImage.Click += (_, __) => PasteImageFromClipboard();
             menu.Items.Add(pasteImage);
 
-            var paintToggle = new MenuItem { Header = "ペイントモード切り替え (Alt)" };
+            var paintToggle = new MenuItem { Header = AppStrings.ContextMenuTogglePaintMode };
             paintToggle.Click += (_, __) => TogglePaintMode();
             menu.Items.Add(paintToggle);
 
-            var copyComposite = new MenuItem { Header = "全体をコピー (Ctrl+C)" };
+            var copyComposite = new MenuItem { Header = AppStrings.ContextMenuCopyAll };
             copyComposite.Click += (_, __) => CopyCompositeToClipboard();
             menu.Items.Add(copyComposite);
 
-            var saveImage = new MenuItem { Header = "画像として保存 (Ctrl+S)" };
+            var saveImage = new MenuItem { Header = AppStrings.ContextMenuSaveImage };
             saveImage.Click += (_, __) => SaveAsImage();
             menu.Items.Add(saveImage);
 
@@ -1196,7 +1202,11 @@ namespace ScreenCapture
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"コピーに失敗しました: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    AppStrings.Format(AppStrings.CopyFailed, ex.Message),
+                    AppStrings.ErrorTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 
@@ -1787,7 +1797,7 @@ namespace ScreenCapture
                 // ファイルダイアログを表示して保存先を選択
                 var dialog = new System.Windows.Forms.SaveFileDialog
                 {
-                    Filter = "PNGファイル (*.png)|*.png|JPEGファイル (*.jpg;*.jpeg)|*.jpg;*.jpeg|全てのファイル (*.*)|*.*",
+                    Filter = AppStrings.SaveDialogFilter,
                     DefaultExt = "png",
                     AddExtension = true
                 };
@@ -1805,7 +1815,11 @@ namespace ScreenCapture
                         encoder.Save(fileStream);
                     }
 
-                    MessageBox.Show($"画像を保存しました: {filePath}", "保存完了", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(
+                        AppStrings.Format(AppStrings.ImageSaved, filePath),
+                        AppStrings.SaveCompleteTitle,
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
                 }
 
                 // UI要素を復元
@@ -1836,7 +1850,11 @@ namespace ScreenCapture
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"画像の保存に失敗しました: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    AppStrings.Format(AppStrings.ImageSaveFailed, ex.Message),
+                    AppStrings.ErrorTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
     }

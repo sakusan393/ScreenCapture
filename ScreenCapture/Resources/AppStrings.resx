@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ContextMenuAddText" xml:space="preserve">
+    <value>Add Text</value>
+  </data>
+  <data name="ContextMenuPasteImage" xml:space="preserve">
+    <value>Paste Image (Ctrl+V)</value>
+  </data>
+  <data name="ContextMenuTogglePaintMode" xml:space="preserve">
+    <value>Toggle Paint Mode (Alt)</value>
+  </data>
+  <data name="ContextMenuCopyAll" xml:space="preserve">
+    <value>Copy All (Ctrl+C)</value>
+  </data>
+  <data name="ContextMenuSaveImage" xml:space="preserve">
+    <value>Save Image (Ctrl+S)</value>
+  </data>
+  <data name="CopyFailed" xml:space="preserve">
+    <value>Failed to copy: {0}</value>
+  </data>
+  <data name="ErrorTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="SaveDialogFilter" xml:space="preserve">
+    <value>PNG files (*.png)|*.png|JPEG files (*.jpg;*.jpeg)|*.jpg;*.jpeg|All files (*.*)|*.*</value>
+  </data>
+  <data name="ImageSaved" xml:space="preserve">
+    <value>Image saved: {0}</value>
+  </data>
+  <data name="SaveCompleteTitle" xml:space="preserve">
+    <value>Save Complete</value>
+  </data>
+  <data name="ImageSaveFailed" xml:space="preserve">
+    <value>Failed to save the image: {0}</value>
+  </data>
+  <data name="ChangeFrameColorToolTip" xml:space="preserve">
+    <value>Change frame color</value>
+  </data>
+  <data name="ChangeBackgroundColorToolTip" xml:space="preserve">
+    <value>Change background color</value>
+  </data>
+  <data name="MinimizeToolTip" xml:space="preserve">
+    <value>Minimize</value>
+  </data>
+  <data name="CloseWindowToolTip" xml:space="preserve">
+    <value>Close window</value>
+  </data>
+  <data name="IncreaseTextSizeToolTip" xml:space="preserve">
+    <value>Increase text size</value>
+  </data>
+  <data name="DecreaseTextSizeToolTip" xml:space="preserve">
+    <value>Decrease text size</value>
+  </data>
+  <data name="TextColorToolTip" xml:space="preserve">
+    <value>Text color</value>
+  </data>
+  <data name="TextBackgroundColorToolTip" xml:space="preserve">
+    <value>Text background color</value>
+  </data>
+</root>

@@ -104,7 +104,6 @@
                     BorderBrush="#FF00BFFF"
                     BorderThickness="2"
                     Margin="0,0,2,0"
-                    ToolTip="文字を大きく"
                     Padding="0,-2,0,0"/>
             <Button x:Name="FontSizeDownButton"
                     Width="20" Height="20"
@@ -116,7 +115,6 @@
                     Foreground="Black"
                     BorderBrush="#FF00BFFF"
                     BorderThickness="2"
-                    ToolTip="文字を小さく"
                     Padding="0,-2,0,0"/>
         </StackPanel>
 
@@ -131,13 +129,11 @@
             <local:ColorPickerButton x:Name="TextColorPicker"
                                      Width="30"
                                      Height="30"
-                                     Margin="0,0,2,0"
-                                     ToolTip="文字色"/>
+                                     Margin="0,0,2,0"/>
             <local:ColorPickerButton x:Name="TextBackgroundPicker"
                                      Width="30"
                                      Height="30"
-                                     Margin="0,0,2,0"
-                                     ToolTip="背景色"/>
+                                     Margin="0,0,2,0"/>
         </StackPanel>
     </Grid>
 </UserControl>

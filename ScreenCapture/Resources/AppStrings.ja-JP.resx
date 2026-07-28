@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ContextMenuAddText" xml:space="preserve">
+    <value>テキスト追加</value>
+  </data>
+  <data name="ContextMenuPasteImage" xml:space="preserve">
+    <value>画像を貼り付け (Ctrl+V)</value>
+  </data>
+  <data name="ContextMenuTogglePaintMode" xml:space="preserve">
+    <value>ペイントモード切り替え (Alt)</value>
+  </data>
+  <data name="ContextMenuCopyAll" xml:space="preserve">
+    <value>全体をコピー (Ctrl+C)</value>
+  </data>
+  <data name="ContextMenuSaveImage" xml:space="preserve">
+    <value>画像として保存 (Ctrl+S)</value>
+  </data>
+  <data name="CopyFailed" xml:space="preserve">
+    <value>コピーに失敗しました: {0}</value>
+  </data>
+  <data name="ErrorTitle" xml:space="preserve">
+    <value>エラー</value>
+  </data>
+  <data name="SaveDialogFilter" xml:space="preserve">
+    <value>PNGファイル (*.png)|*.png|JPEGファイル (*.jpg;*.jpeg)|*.jpg;*.jpeg|すべてのファイル (*.*)|*.*</value>
+  </data>
+  <data name="ImageSaved" xml:space="preserve">
+    <value>画像を保存しました: {0}</value>
+  </data>
+  <data name="SaveCompleteTitle" xml:space="preserve">
+    <value>保存完了</value>
+  </data>
+  <data name="ImageSaveFailed" xml:space="preserve">
+    <value>画像の保存に失敗しました: {0}</value>
+  </data>
+  <data name="ChangeFrameColorToolTip" xml:space="preserve">
+    <value>枠線の色を変更</value>
+  </data>
+  <data name="ChangeBackgroundColorToolTip" xml:space="preserve">
+    <value>背景色を変更</value>
+  </data>
+  <data name="MinimizeToolTip" xml:space="preserve">
+    <value>最小化</value>
+  </data>
+  <data name="CloseWindowToolTip" xml:space="preserve">
+    <value>ウィンドウを閉じる</value>
+  </data>
+  <data name="IncreaseTextSizeToolTip" xml:space="preserve">
+    <value>文字を大きく</value>
+  </data>
+  <data name="DecreaseTextSizeToolTip" xml:space="preserve">
+    <value>文字を小さく</value>
+  </data>
+  <data name="TextColorToolTip" xml:space="preserve">
+    <value>文字色</value>
+  </data>
+  <data name="TextBackgroundColorToolTip" xml:space="preserve">
+    <value>背景色</value>
+  </data>
+</root>
